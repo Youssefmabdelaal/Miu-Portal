@@ -120,6 +120,71 @@ button[type="submit"] {
     margin-top: 1rem;
 }
 
+.form-message {
+    margin: 0.5rem 0 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.form-message.error {
+    background-color: #fdecea;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+}
+
+.form-message.success {
+    background-color: #e9f7ef;
+    color: #27ae60;
+    border: 1px solid #bde5d9;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.checkbox-row input {
+    width: auto;
+    margin: 0;
+}
+
+.strength-meter {
+    background-color: #ecf0f1;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+#strength-bar {
+    height: 8px;
+    width: 100%;
+    border-radius: 4px;
+    background-color: #dfe6e9;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.3s, width 0.3s;
+}
+
+#strength-bar.weak {
+    background-color: #e74c3c;
+}
+
+#strength-bar.medium {
+    background-color: #f39c12;
+}
+
+#strength-bar.strong {
+    background-color: #2ecc71;
+}
+
+#strength-text {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
 /* Dashboard */
 .dashboard {
     text-align: center;

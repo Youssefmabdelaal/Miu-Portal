@@ -30,6 +30,17 @@
                 <label for="confirm-password">Confirm Password:</label>
                 <input type="password" id="confirm-password" name="confirm-password" required>
                 
+                <div class="checkbox-row">
+                    <input type="checkbox" id="show-password">
+                    <label for="show-password" class="checkbox-label">Show password</label>
+                </div>
+
+                <div class="strength-meter">
+                    <div id="strength-bar"></div>
+                    <p id="strength-text">Password strength: <span>Empty</span></p>
+                </div>
+
+                <div id="form-message" class="form-message"></div>
                 <button type="submit" class="btn">Register</button>
             </form>
             <p>Already have an account? <a href="login.html">Login here</a></p>
@@ -39,5 +50,6 @@
         <p>&copy; 2026 Smart University. All rights reserved.</p>
     </footer>
     <script src="../js/script.js"></script>
+    <script src="../js/auth.js"></script>
 </body>
 </html>
