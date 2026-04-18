@@ -1,5 +1,5 @@
 Smart University Course Registration System
-A complete web application for university course registration with student and admin features.
+A complete web application for university course registration with student and admin features
 
 Project Structure
 /css - External CSS files for styling (admin-panel.css)
