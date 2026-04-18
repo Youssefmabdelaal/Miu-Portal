@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Smart University Course Registration System</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="../css/admin-panel.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>Smart University</h1>
+                <span class="admin-badge">Admin Panel</span>
+            </div>
+            <div class="navbar-menu">
+                <a href="#" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3>Admin Menu</h3>
+            <ul class="menu-list">
+                <li><a href="#manage-courses" class="menu-item active">Manage Courses</a></li>
+                <li><a href="#view-enrollments" class="menu-item">View Enrollments</a></li>
+                <li><a href="#settings" class="menu-item">Settings</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Section: Add/Edit Course Form -->
+            <section class="form-section">
+                <h2>Add/Edit Course</h2>
+                <form id="courseForm" class="admin-form">
+                    <!-- Hidden input to track if editing existing course -->
+                    <input type="hidden" id="courseId" value="">
+
+                    <div class="form-group">
+                        <label for="courseName">Course Name *</label>
+                        <input 
+                            type="text" 
+                            id="courseName" 
+                            name="courseName" 
+                            placeholder="Enter course name"
+                            required
+                        >
+                        <span class="error-message" id="courseNameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="courseCode">Course Code *</label>
+                        <input 
+                            type="text" 
+                            id="courseCode" 
+                            name="courseCode" 
+                            placeholder="e.g., CS101"
+                            required
+                        >
+                        <span class="error-message" id="courseCodeError"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="instructor">Instructor Name *</label>
+                            <input 
+                                type="text" 
+                                id="instructor" 
+                                name="instructor" 
+                                placeholder="Enter instructor name"
+                                required
+                            >
+                            <span class="error-message" id="instructorError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seats">Available Seats *</label>
+                            <input 
+                                type="number" 
+                                id="seats" 
+                                name="seats" 
+                                placeholder="Enter number of seats"
+                                min="1"
+                                max="500"
+                                required
+                            >
+                            <span class="error-message" id="seatsError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schedule">Schedule *</label>
+                            <input 
+                                type="text" 
+                                id="schedule" 
+                                name="schedule" 
+                                placeholder="e.g., Mon, Wed, Fri 10:00 AM"
+                                required
+                            >
+                            <span class="error-message" id="scheduleError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="room">Room Number *</label>
+                            <input 
+                                type="text" 
+                                id="room" 
+                                name="room" 
+                                placeholder="e.g., A401"
+                                required
+                            >
+                            <span class="error-message" id="roomError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Course Description</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            placeholder="Enter course description (optional)"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Add Course</button>
+                        <button type="reset" class="btn btn-secondary" id="resetBtn">Clear Form</button>
+                        <button type="button" class="btn btn-danger" id="cancelBtn" style="display: none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <!-- Success/Error Messages -->
+                <div class="message-container">
+                    <div id="successMessage" class="message message-success" style="display: none;"></div>
+                    <div id="errorMessage" class="message message-error" style="display: none;"></div>
+                </div>
+            </section>
+
+            <!-- Section: Course Management Table -->
+            <section class="table-section">
+                <h2>Manage Courses</h2>
+                
+                <!-- Search and Filter -->
+                <div class="search-filter">
+                    <input 
+                        type="text" 
+                        id="searchBox" 
+                        placeholder="Search courses by name or code..."
+                        class="search-input"
+                    >
+                    <button class="btn btn-small" id="refreshBtn">Refresh</button>
+                </div>
+
+                <!-- Courses Table -->
+                <div class="table-wrapper">
+                    <table class="courses-table" id="coursesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Course Name</th>
+                                <th>Code</th>
+                                <th>Instructor</th>
+                                <th>Seats</th>
+                                <th>Schedule</th>
+                                <th>Room</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Courses will be populated here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State Message -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <p>No courses found. Add a new course to get started.</p>
+                </div>
+
+                <!-- Stats Section -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h4>Total Courses</h4>
+                        <p class="stat-number" id="totalCourses">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Total Seats Available</h4>
+                        <p class="stat-number" id="totalSeats">0</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this course? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+            </div>
+        </div>
+        <div class="modal-overlay" id="modalOverlay"></div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="../js/admin-panel.js"></script>
+</body>
+</html>
