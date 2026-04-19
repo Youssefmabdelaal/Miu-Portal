@@ -40,6 +40,11 @@ nav a:hover {
     background-color: #34495e;
 }
 
+nav a.active {
+    border-bottom: 3px solid #fff;
+    padding-bottom: 0.2rem;
+}
+
 main {
     max-width: 1200px;
     margin: 2rem auto;
