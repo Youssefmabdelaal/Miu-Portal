@@ -65,65 +65,8 @@ function loadCourses() {
     if (storedCourses) {
         allCourses = JSON.parse(storedCourses);
     } else {
-        // Initialize with sample courses if none exist
-        allCourses = [
-            {
-                id: 1,
-                courseName: 'Introduction to Computer Science',
-                courseCode: 'CS101',
-                instructor: 'Dr. Alice Johnson',
-                seats: 25,
-                schedule: 'Mon/Wed 10:00 AM - 11:30 AM',
-                room: 'Room 101',
-                description: '',
-                enrolledStudents: 0
-            },
-            {
-                id: 2,
-                courseName: 'Data Structures and Algorithms',
-                courseCode: 'CS201',
-                instructor: 'Prof. Bob Smith',
-                seats: 20,
-                schedule: 'Tue/Thu 2:00 PM - 3:30 PM',
-                room: 'Room 202',
-                description: '',
-                enrolledStudents: 0
-            },
-            {
-                id: 3,
-                courseName: 'Web Development Fundamentals',
-                courseCode: 'CS301',
-                instructor: 'Dr. Carol Davis',
-                seats: 15,
-                schedule: 'Mon/Wed/Fri 1:00 PM - 2:00 PM',
-                room: 'Lab 303',
-                description: '',
-                enrolledStudents: 0
-            },
-            {
-                id: 4,
-                courseName: 'Database Systems',
-                courseCode: 'CS401',
-                instructor: 'Prof. David Wilson',
-                seats: 18,
-                schedule: 'Tue/Thu 9:00 AM - 10:30 AM',
-                room: 'Room 404',
-                description: '',
-                enrolledStudents: 0
-            },
-            {
-                id: 5,
-                courseName: 'Artificial Intelligence',
-                courseCode: 'CS501',
-                instructor: 'Dr. Eva Brown',
-                seats: 12,
-                schedule: 'Wed/Fri 3:00 PM - 4:30 PM',
-                room: 'Lab 505',
-                description: '',
-                enrolledStudents: 0
-            }
-        ];
-        saveCourses();
+        // Start empty so admin can add courses manually
+        allCourses = [];
     }
     filteredCourses = [...allCourses]; // Initialize filtered courses
 }
@@ -193,7 +136,13 @@ function renderCourses() {
     coursesList.innerHTML = '';
 
     if (filteredCourses.length === 0) {
-        coursesList.innerHTML = '<p class="no-courses">No courses found matching your search.</p>';
+        const searchInput = document.getElementById('search-input');
+        const searchTerm = searchInput ? searchInput.value.trim() : '';
+        if (searchTerm !== '') {
+            coursesList.innerHTML = '<p class="no-courses">No courses match your search.</p>';
+        } else {
+            coursesList.innerHTML = '<p class="no-courses">No courses are currently available. The admin will add courses soon.</p>';
+        }
         return;
     }
 

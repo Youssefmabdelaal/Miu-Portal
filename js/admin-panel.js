@@ -15,10 +15,19 @@ let courses = []; // Store all courses
 let currentEditingCourseId = null; // Track which course is being edited
 let courseToDelete = null; // Track which course is being deleted
 
+const STORAGE_CURRENT_USER_KEY = 'smartUniversityCurrentUser';
+
 // ========== INITIALIZATION ==========
 // Run when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✓ Admin Panel Loaded');
+    
+    // Check if user is admin
+    if (!isAdmin()) {
+        alert('Access denied. Admin privileges required.');
+        window.location.href = 'login.html';
+        return;
+    }
     
     // Load initial data
     loadCoursesFromStorage();
@@ -30,6 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
     renderCoursesTable();
     updateStats();
 });
+
+// Function to check if current user is admin
+function isAdmin() {
+    const storedUser = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
+    if (!storedUser) return false;
+    try {
+        const user = JSON.parse(storedUser);
+        return user.role === 'admin';
+    } catch (error) {
+        return false;
+    }
+}
 
 // ========== EVENT LISTENERS ==========
 function attachEventListeners() {
@@ -58,13 +79,17 @@ function attachEventListeners() {
     document.getElementById('modalOverlay').addEventListener('click', closeDeleteModal);
     
     // Logout button
-    document.querySelector('.logout-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        if (confirm('Are you sure you want to logout?')) {
-            alert('Logged out successfully!');
-            // In a real system, this would redirect to login page
-        }
-    });
+    document.querySelector('.logout-btn').addEventListener('click', handleLogout);
+}
+
+// ========== LOGOUT FUNCTION ==========
+function handleLogout(e) {
+    e.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
+        alert('Logged out successfully!');
+        window.location.href = 'login.html';
+    }
 }
 
 // ========== FORM VALIDATION ==========
@@ -591,71 +616,14 @@ function loadCoursesFromStorage() {
             courses = JSON.parse(storedData);
             console.log('✓ Courses loaded from storage:', courses.length);
         } else {
-            // Load sample data if no data exists
-            courses = getSampleCourses();
-            saveCoursesToStorage();
-            console.log('✓ Sample courses loaded');
+            // Start with no courses so admin can add them manually
+            courses = [];
+            console.log('✓ No saved courses found. Add courses from the admin panel.');
         }
     } catch (error) {
         console.error('Error loading from storage:', error);
-        courses = getSampleCourses();
+        courses = [];
     }
-}
-
-/**
- * Sample courses for initial data
- */
-function getSampleCourses() {
-    return [
-        {
-            id: 'course_1',
-            courseName: 'Introduction to Web Development',
-            courseCode: 'CS101',
-            instructor: 'Dr. John Smith',
-            seats: 30,
-            schedule: 'Mon, Wed, Fri 10:00 AM - 11:30 AM',
-            room: 'A401',
-            description: 'Learn HTML, CSS, and JavaScript basics',
-            enrolledStudents: 25,
-            createdAt: '4/18/2026'
-        },
-        {
-            id: 'course_2',
-            courseName: 'Data Structures & Algorithms',
-            courseCode: 'CS201',
-            instructor: 'Prof. Sarah Johnson',
-            seats: 25,
-            schedule: 'Tue, Thu 2:00 PM - 3:30 PM',
-            room: 'B205',
-            description: 'Master fundamental data structures and algorithms',
-            enrolledStudents: 22,
-            createdAt: '4/18/2026'
-        },
-        {
-            id: 'course_3',
-            courseName: 'Database Management Systems',
-            courseCode: 'CS301',
-            instructor: 'Dr. Michael Chen',
-            seats: 28,
-            schedule: 'Mon, Wed 1:00 PM - 2:30 PM',
-            room: 'C301',
-            description: 'SQL, database design, and optimization',
-            enrolledStudents: 20,
-            createdAt: '4/18/2026'
-        },
-        {
-            id: 'course_4',
-            courseName: 'Advanced Web Applications',
-            courseCode: 'CS401',
-            instructor: 'Dr. Emma Wilson',
-            seats: 20,
-            schedule: 'Tue, Thu 11:00 AM - 12:30 PM',
-            room: 'A302',
-            description: 'React, Node.js, and full-stack development',
-            enrolledStudents: 18,
-            createdAt: '4/18/2026'
-        }
-    ];
 }
 
 // ========== MESSAGE UTILITIES ==========
