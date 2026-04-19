@@ -1,16 +1,4 @@
-/* ========================================
-   ADMIN PANEL - JAVASCRIPT
-   Smart University Course Registration System
-   
-   Handles:
-   - Course CRUD operations (Create, Read, Update, Delete)
-   - Form validation
-   - Dynamic table updates
-   - Modal dialogs
-   - Search/filter functionality
-   ======================================== */
 
-// ========== GLOBAL VARIABLES ==========
 let courses = []; // Store all courses
 let currentEditingCourseId = null; // Track which course is being edited
 let courseToDelete = null; // Track which course is being deleted
