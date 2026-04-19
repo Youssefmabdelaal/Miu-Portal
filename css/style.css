@@ -218,19 +218,55 @@ button[type="submit"] {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
 .course-card {
     border: 1px solid #ddd;
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 4px;
+    transition: box-shadow 0.3s;
+}
+
+.course-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .course-card h3 {
     margin-bottom: 0.5rem;
+    color: #2c3e50;
 }
 
 .course-card p {
     margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.seats-info {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.no-courses {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.registered {
+    background-color: #e9f7ef;
+    border-color: #27ae60;
 }
 
 /* Admin Section */

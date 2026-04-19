@@ -17,16 +17,11 @@
     <main>
         <section class="courses-section">
             <h2>Available Courses</h2>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search courses by name, code, or instructor..." class="search-input">
+            </div>
             <div id="courses-list">
                 <!-- Courses will be loaded here -->
-                <div class="course-card">
-                    <h3>Course Name</h3>
-                    <p>Code: CS101</p>
-                    <p>Instructor: Dr. Smith</p>
-                    <p>Available Seats: 25</p>
-                    <button class="btn add-course">Add Course</button>
-                </div>
-                <!-- More course cards -->
             </div>
             <h2>My Registered Courses</h2>
             <div id="registered-courses">
@@ -38,5 +33,6 @@
         <p>&copy; 2026 Smart University. All rights reserved.</p>
     </footer>
     <script src="../js/script.js"></script>
+    <script src="../js/courses.js"></script>
 </body>
 </html>
