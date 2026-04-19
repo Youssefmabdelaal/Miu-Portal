@@ -183,6 +183,7 @@ function handleLogin(event) {
     event.preventDefault();
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
+    const selectedRole = document.getElementById('role').value;
     const messageElement = document.getElementById('form-message');
 
     if (!email || !password) {
@@ -200,6 +201,12 @@ function handleLogin(event) {
 
     if (!account) {
         showMessage(messageElement, 'Login failed. Check your email and password.', 'error');
+        return;
+    }
+
+    // Check if the selected role matches the account role
+    if (account.role !== selectedRole) {
+        showMessage(messageElement, `Login failed. This account is not registered as a ${selectedRole}.`, 'error');
         return;
     }
 
