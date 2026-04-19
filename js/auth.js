@@ -53,6 +53,17 @@ function setupRegisterForm() {
 function setupLoginForm() {
     const loginForm = document.getElementById('login-form');
     if (!loginForm) return;
+    
+    const passwordInput = document.getElementById('password');
+    const showPasswordCheckbox = document.getElementById('show-password');
+
+    if (showPasswordCheckbox) {
+        showPasswordCheckbox.addEventListener('change', () => {
+            const type = showPasswordCheckbox.checked ? 'text' : 'password';
+            passwordInput.type = type;
+        });
+    }
+
     loginForm.addEventListener('submit', handleLogin);
 }
 
