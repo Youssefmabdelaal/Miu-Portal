@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render registered courses
     renderRegisteredCourses();
+    
+    // Update course limit warning
+    updateCourseLimitWarning();
 });
 
 // ========== DATA LOADING ==========
@@ -162,6 +165,7 @@ function renderCourses() {
  * Create a course card element
  */
 function createCourseCard(course, isRegistered) {
+<<<<<<< HEAD
     const card = document.createElement('article');
     card.dataset.courseCard = String(course.id);
     card.className =
@@ -224,6 +228,38 @@ function createCourseCard(course, isRegistered) {
         btn.addEventListener('click', () => {
             if (btn.getAttribute('data-action') === 'drop') dropCourse(course.id);
             else addCourse(course.id);
+=======
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    const isFull = course.seats <= 0;
+    const isLimitReached = currentUser.courses.length >= 5;
+    
+    card.innerHTML = `
+        <h3>${course.courseName}</h3>
+        <p><strong>Code:</strong> ${course.courseCode}</p>
+        <p><strong>Instructor:</strong> ${course.instructor}</p>
+        <p><strong>Schedule:</strong> ${course.schedule}</p>
+        <p><strong>Room:</strong> ${course.room}</p>
+        <p><strong>Credits:</strong> ${course.creditHours || 3}</p>
+        <p class="seats-info"><strong>Available Seats:</strong> <span id="seats-${course.id}">${course.seats}</span></p>
+        ${isRegistered ?
+            '<button class="btn drop-course" data-course-id="' + course.id + '">Drop Course</button>' :
+            (isFull || (isLimitReached && !isRegistered) ?
+                '<button class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">' + (isFull ? 'Course Full' : 'Limit Reached') + '</button>' :
+                '<button class="btn add-course" data-course-id="' + course.id + '">Add Course</button>')
+        }
+    `;
+
+    // Add event listener to the button
+    const button = card.querySelector('.btn:not([disabled])');
+    if (button) {
+        button.addEventListener('click', () => {
+            if (isRegistered) {
+                dropCourse(course.id);
+            } else {
+                addCourse(course.id);
+            }
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
         });
     }
 
@@ -256,6 +292,7 @@ function renderRegisteredCourses() {
         courseCard.className =
             'flex flex-col gap-md rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]';
         courseCard.innerHTML = `
+<<<<<<< HEAD
             <div class="flex items-start justify-between gap-md">
                 <div>
                     <div class="mb-xs flex flex-wrap items-center gap-xs">
@@ -279,6 +316,15 @@ function renderRegisteredCourses() {
                     <span class="material-symbols-outlined text-[18px]">close</span> Drop course
                 </button>
             </div>
+=======
+            <h3>${course.courseName}</h3>
+            <p><strong>Code:</strong> ${course.courseCode}</p>
+            <p><strong>Instructor:</strong> ${course.instructor}</p>
+            <p><strong>Schedule:</strong> ${course.schedule}</p>
+            <p><strong>Room:</strong> ${course.room}</p>
+            <p><strong>Credits:</strong> ${course.creditHours || 3}</p>
+            <button class="btn drop-course" data-course-id="${course.id}">Drop Course</button>
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
         `;
         courseCard.querySelector('.reg-drop').addEventListener('click', () => dropCourse(course.id));
         registeredList.appendChild(courseCard);
@@ -310,6 +356,12 @@ function addCourse(courseId) {
         return;
     }
 
+    // Validation: Check if student has reached 5-course limit
+    if (currentUser.courses.length >= 5) {
+        showErrorMessage('You have reached the maximum course limit of 5 courses. Please drop a course before registering for another.');
+        return;
+    }
+
     // Add course to user's courses
     currentUser.courses.push({
         id: course.id,
@@ -317,7 +369,8 @@ function addCourse(courseId) {
         courseCode: course.courseCode,
         instructor: course.instructor,
         schedule: course.schedule,
-        room: course.room
+        room: course.room,
+        creditHours: course.creditHours || 3
     });
 
     // Decrement available seats
@@ -327,8 +380,15 @@ function addCourse(courseId) {
     saveCourses();
     updateUserInStorage();
 
+<<<<<<< HEAD
     updateCourseCard(courseId);
     renderRegisteredCourses();
+=======
+    // Real-time UI updates
+    updateCourseCard(courseId, false); // Update in available courses
+    renderRegisteredCourses(); // Refresh registered courses
+    updateCourseLimitWarning(); // Update the warning
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
 
     // Show success message
     showSuccessMessage(`Successfully registered for ${course.courseName}!`);
@@ -356,8 +416,15 @@ function dropCourse(courseId) {
     saveCourses();
     updateUserInStorage();
 
+<<<<<<< HEAD
     updateCourseCard(courseId);
     renderRegisteredCourses();
+=======
+    // Real-time UI updates
+    updateCourseCard(courseId, true); // Update in available courses (now show add button)
+    renderRegisteredCourses(); // Refresh registered courses
+    updateCourseLimitWarning(); // Update the warning
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
 
     // Show success message
     showSuccessMessage(`Successfully dropped ${course.courseName}.`);
@@ -424,6 +491,26 @@ function showMessage(message, type) {
     toastTimer = setTimeout(function () {
         toast.classList.add('hidden', 'pointer-events-none');
     }, 3200);
+}
+
+/**
+ * Update course limit warning
+ */
+function updateCourseLimitWarning() {
+    const warning = document.getElementById('course-limit-warning');
+    const countSpan = document.getElementById('registered-count');
+    
+    if (warning && countSpan) {
+        countSpan.textContent = currentUser.courses.length;
+        
+        if (currentUser.courses.length >= 5) {
+            warning.style.display = 'block';
+        } else if (currentUser.courses.length > 0) {
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
+    }
 }
 
 // ========== UTILITY FUNCTIONS ==========

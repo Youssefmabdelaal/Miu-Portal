@@ -18,6 +18,23 @@ function initializeProfilePage() {
     if (profileForm) {
         profileForm.addEventListener('submit', event => handleProfileSubmit(event, currentUser));
     }
+
+    // Setup show password functionality
+    setupShowPassword();
+}
+
+function setupShowPassword() {
+    const showPasswordCheckbox = document.getElementById('show-password');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+
+    if (showPasswordCheckbox && passwordInput && confirmPasswordInput) {
+        showPasswordCheckbox.addEventListener('change', () => {
+            const type = showPasswordCheckbox.checked ? 'text' : 'password';
+            passwordInput.type = type;
+            confirmPasswordInput.type = type;
+        });
+    }
 }
 
 function getCurrentUser() {

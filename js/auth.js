@@ -248,12 +248,20 @@ function handleRegister(event) {
 }
 
 function handleLogin(event) {
+<<<<<<< HEAD
   event.preventDefault();
   const identifierEl = document.getElementById('identifier');
   const emailLegacy = document.getElementById('email');
   const rawId = identifierEl ? identifierEl.value : emailLegacy ? emailLegacy.value : '';
   const password = document.getElementById('password').value;
   const messageElement = document.getElementById('form-message');
+=======
+    event.preventDefault();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const selectedRole = document.getElementById('role').value;
+    const messageElement = document.getElementById('form-message');
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
 
   if (!rawId || !password) {
     showMessage(messageElement, 'Please enter your email or Student ID and password.', 'error');
@@ -282,7 +290,40 @@ function handleLogin(event) {
     } else {
       window.location.href = 'student-dashboard.html';
     }
+<<<<<<< HEAD
   }, 900);
+=======
+
+    if (!validateEmail(email)) {
+        showMessage(messageElement, 'Enter a valid email address.', 'error');
+        return;
+    }
+
+    const users = getStoredUsers();
+    const account = users.find(user => user.email === email && user.password === password);
+
+    if (!account) {
+        showMessage(messageElement, 'Login failed. Check your email and password.', 'error');
+        return;
+    }
+
+    // Check if the selected role matches the account role
+    if (account.role !== selectedRole) {
+        showMessage(messageElement, `Login failed. This account is not registered as a ${selectedRole}.`, 'error');
+        return;
+    }
+
+    setCurrentUser(account);
+    showMessage(messageElement, 'Login successful! Redirecting...', 'success');
+
+    setTimeout(() => {
+        if (account.role === 'admin') {
+            window.location.href = 'admin-panel.html';
+        } else {
+            window.location.href = 'student-dashboard.html';
+        }
+    }, 900);
+>>>>>>> 2ed4848aba044e326d7c5ca8e81f2395b2ccc239
 }
 
 function showMessage(element, text, type) {

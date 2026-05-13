@@ -98,6 +98,7 @@ function validateForm() {
     const seats = document.getElementById('seats').value.trim();
     const schedule = document.getElementById('schedule').value.trim();
     const room = document.getElementById('room').value.trim();
+    const creditHours = document.getElementById('creditHours').value.trim();
     
     // Validate Course Name
     if (courseName === '') {
@@ -159,6 +160,15 @@ function validateForm() {
         showFieldError('room', 'Please enter a room or location (at least 2 characters)');
         isValid = false;
     }
+
+    // Validate Credit Hours
+    if (creditHours === '') {
+        showFieldError('creditHours', 'Credit hours is required');
+        isValid = false;
+    } else if (isNaN(creditHours) || creditHours < 1 || creditHours > 4) {
+        showFieldError('creditHours', 'Credit hours must be a number between 1 and 4');
+        isValid = false;
+    }
     
     return isValid;
 }
@@ -217,6 +227,7 @@ function handleFormSubmit(e) {
         courseCode: document.getElementById('courseCode').value.trim().toUpperCase(),
         instructor: document.getElementById('instructor').value.trim(),
         seats: parseInt(document.getElementById('seats').value),
+        creditHours: parseInt(document.getElementById('creditHours').value),
         schedule: document.getElementById('schedule').value.trim(),
         room: document.getElementById('room').value.trim(),
         description: document.getElementById('description').value.trim(),
@@ -345,6 +356,7 @@ function editCourse(courseId) {
     document.getElementById('courseCode').value = course.courseCode;
     document.getElementById('instructor').value = course.instructor;
     document.getElementById('seats').value = course.seats;
+    document.getElementById('creditHours').value = course.creditHours || 3;
     document.getElementById('schedule').value = course.schedule;
     document.getElementById('room').value = course.room;
     document.getElementById('description').value = course.description || '';
@@ -470,6 +482,7 @@ function renderCoursesTable() {
             <td>
                 <span class="inline-block rounded-md bg-surface-container-high px-sm py-xs font-label-sm text-on-surface-variant">${escapeHtml(String(course.seats))}</span>
             </td>
+            <td><strong>${course.creditHours || 3}</strong></td>
             <td>${escapeHtml(course.schedule)}</td>
             <td>${escapeHtml(course.room)}</td>
             <td>
