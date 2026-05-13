@@ -139,12 +139,17 @@ function renderCourses() {
         const searchInput = document.getElementById('search-input');
         const searchTerm = searchInput ? searchInput.value.trim() : '';
         if (searchTerm !== '') {
-            coursesList.innerHTML = '<p class="no-courses">No courses match your search.</p>';
+            coursesList.innerHTML =
+                '<p class="col-span-full rounded-xl border border-outline-variant bg-surface-container-low p-lg text-center font-body-sm text-on-surface-variant">No courses match your search.</p>';
         } else {
-            coursesList.innerHTML = '<p class="no-courses">No courses are currently available. The admin will add courses soon.</p>';
+            coursesList.innerHTML =
+                '<p class="col-span-full rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-lg text-center font-body-sm text-on-surface-variant">No courses are currently available. Ask an admin to add courses.</p>';
         }
         return;
     }
+
+    const countEl = document.getElementById('course-count');
+    if (countEl) countEl.textContent = String(filteredCourses.length);
 
     filteredCourses.forEach(course => {
         const isRegistered = currentUser.courses.some(c => c.id === course.id);
@@ -157,32 +162,78 @@ function renderCourses() {
  * Create a course card element
  */
 function createCourseCard(course, isRegistered) {
-    const card = document.createElement('div');
-    card.className = 'course-card';
+    const card = document.createElement('article');
+    card.dataset.courseCard = String(course.id);
+    card.className =
+        'flex flex-col gap-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-md transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.05)] group';
+
+    const open = course.seats > 0;
+    const seatPct =
+        course.maxSeats && course.maxSeats > 0
+            ? Math.min(100, Math.round(((course.maxSeats - course.seats) / course.maxSeats) * 100))
+            : open
+              ? Math.min(90, 25 + Math.min(course.seats, 20) * 3)
+              : 100;
+
+    const statusBadge = open
+        ? `<span class="flex items-center gap-[2px] rounded-full bg-[#e6f4ea] px-sm py-[2px] font-label-sm text-label-sm text-[#137333]"><span class="h-2 w-2 rounded-full bg-[#137333]"></span> Open</span>`
+        : `<span class="flex items-center gap-[2px] rounded-full bg-error-container px-sm py-[2px] font-label-sm text-label-sm text-on-error-container"><span class="h-2 w-2 rounded-full bg-error"></span> Full</span>`;
+
+    let actionHtml = '';
+    if (isRegistered) {
+        actionHtml = `<button type="button" class="course-action shrink-0 rounded-lg border border-outline-variant bg-surface-container-high px-md py-sm font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-error-container hover:text-on-error-container" data-course-id="${course.id}" data-action="drop">Drop</button>`;
+    } else if (!open) {
+        actionHtml = `<button type="button" disabled class="shrink-0 cursor-not-allowed rounded-lg border border-outline-variant bg-surface-container-high px-md py-sm font-label-md text-label-md text-on-surface-variant">Closed</button>`;
+    } else {
+        actionHtml = `<button type="button" class="course-action shrink-0 rounded-lg bg-primary px-md py-sm font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container" data-course-id="${course.id}" data-action="add">Enroll</button>`;
+    }
+
     card.innerHTML = `
-        <h3>${course.courseName}</h3>
-        <p><strong>Code:</strong> ${course.courseCode}</p>
-        <p><strong>Instructor:</strong> ${course.instructor}</p>
-        <p><strong>Schedule:</strong> ${course.schedule}</p>
-        <p><strong>Room:</strong> ${course.room}</p>
-        <p class="seats-info"><strong>Available Seats:</strong> <span id="seats-${course.id}">${course.seats}</span></p>
-        ${isRegistered ?
-            '<button class="btn drop-course" data-course-id="' + course.id + '">Drop Course</button>' :
-            '<button class="btn add-course" data-course-id="' + course.id + '">Add Course</button>'
-        }
+        <div class="mb-xs flex items-start justify-between">
+            <span class="rounded border border-outline-variant bg-surface-container-high px-sm py-[2px] font-label-sm font-bold text-on-surface-variant">${escapeHtml(course.courseCode)}</span>
+            ${statusBadge}
+        </div>
+        <div>
+            <h3 class="mb-xs font-headline-sm text-headline-sm leading-tight text-on-surface transition-colors group-hover:text-primary">${escapeHtml(course.courseName)}</h3>
+            <p class="flex items-center gap-xs font-body-sm text-body-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[16px]">person</span> ${escapeHtml(course.instructor)}
+            </p>
+            <p class="mt-[2px] flex items-center gap-xs font-body-sm text-body-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[16px]">schedule</span> ${escapeHtml(course.schedule)}
+            </p>
+            <p class="mt-[2px] flex items-center gap-xs font-body-sm text-body-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[16px]">location_on</span> ${escapeHtml(course.room || 'TBA')}
+            </p>
+        </div>
+        <div class="mt-auto flex items-end justify-between border-t border-surface-container-highest pt-md ${!open && !isRegistered ? 'opacity-70' : ''}">
+            <div class="mr-md w-full">
+                <div class="mb-xs flex justify-between font-label-sm text-label-sm text-secondary">
+                    <span>Seats left</span>
+                    <span id="seats-${course.id}">${course.seats}</span>
+                </div>
+                <div class="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-high">
+                    <div class="h-full rounded-full ${open ? 'bg-primary' : 'bg-error'}" style="width:${seatPct}%"></div>
+                </div>
+            </div>
+            ${actionHtml}
+        </div>
     `;
 
-    // Add event listener to the button
-    const button = card.querySelector('.btn');
-    button.addEventListener('click', () => {
-        if (isRegistered) {
-            dropCourse(course.id);
-        } else {
-            addCourse(course.id);
-        }
-    });
+    const btn = card.querySelector('.course-action');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            if (btn.getAttribute('data-action') === 'drop') dropCourse(course.id);
+            else addCourse(course.id);
+        });
+    }
 
     return card;
+}
+
+function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
 }
 
 /**
@@ -195,25 +246,41 @@ function renderRegisteredCourses() {
     registeredList.innerHTML = '';
 
     if (currentUser.courses.length === 0) {
-        registeredList.innerHTML = '<p class="no-courses">You have not registered for any courses yet.</p>';
+        registeredList.innerHTML =
+            '<p class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-lg text-center font-body-sm text-on-surface-variant">You have not registered for any courses yet.</p>';
         return;
     }
 
     currentUser.courses.forEach(course => {
         const courseCard = document.createElement('div');
-        courseCard.className = 'course-card registered';
+        courseCard.className =
+            'flex flex-col gap-md rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]';
         courseCard.innerHTML = `
-            <h3>${course.courseName}</h3>
-            <p><strong>Code:</strong> ${course.courseCode}</p>
-            <p><strong>Instructor:</strong> ${course.instructor}</p>
-            <p><strong>Schedule:</strong> ${course.schedule}</p>
-            <p><strong>Room:</strong> ${course.room}</p>
-            <button class="btn drop-course" data-course-id="${course.id}">Drop Course</button>
+            <div class="flex items-start justify-between gap-md">
+                <div>
+                    <div class="mb-xs flex flex-wrap items-center gap-xs">
+                        <span class="rounded-sm bg-primary-fixed px-xs py-[2px] font-label-sm text-label-sm text-primary">${escapeHtml(course.courseCode)}</span>
+                    </div>
+                    <h3 class="font-headline-sm text-headline-sm leading-tight text-on-surface">${escapeHtml(course.courseName)}</h3>
+                </div>
+                <span class="flex items-center gap-xs rounded-full bg-secondary-container px-sm py-xs font-label-sm text-label-sm text-on-secondary-container">
+                    <span class="h-1.5 w-1.5 rounded-full bg-primary"></span> Enrolled
+                </span>
+            </div>
+            <div class="grid grid-cols-2 gap-sm font-body-sm text-on-surface-variant">
+                <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">person</span>${escapeHtml(course.instructor)}</div>
+                <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">location_on</span>${escapeHtml(course.room || 'TBA')}</div>
+                <div class="col-span-2 flex items-center gap-xs text-on-surface">
+                    <span class="material-symbols-outlined text-[16px]">schedule</span>${escapeHtml(course.schedule)}
+                </div>
+            </div>
+            <div class="mt-sm flex justify-end border-t border-outline-variant/50 pt-md">
+                <button type="button" class="flex items-center gap-xs rounded-lg border border-outline-variant px-md py-sm font-label-md text-label-md text-secondary transition-colors duration-200 hover:border-error-container hover:bg-error-container hover:text-on-error-container reg-drop" data-course-id="${course.id}">
+                    <span class="material-symbols-outlined text-[18px]">close</span> Drop course
+                </button>
+            </div>
         `;
-
-        const button = courseCard.querySelector('.drop-course');
-        button.addEventListener('click', () => dropCourse(course.id));
-
+        courseCard.querySelector('.reg-drop').addEventListener('click', () => dropCourse(course.id));
         registeredList.appendChild(courseCard);
     });
 }
@@ -260,9 +327,8 @@ function addCourse(courseId) {
     saveCourses();
     updateUserInStorage();
 
-    // Real-time UI updates
-    updateCourseCard(courseId, false); // Update in available courses
-    renderRegisteredCourses(); // Refresh registered courses
+    updateCourseCard(courseId);
+    renderRegisteredCourses();
 
     // Show success message
     showSuccessMessage(`Successfully registered for ${course.courseName}!`);
@@ -290,9 +356,8 @@ function dropCourse(courseId) {
     saveCourses();
     updateUserInStorage();
 
-    // Real-time UI updates
-    updateCourseCard(courseId, true); // Update in available courses (now show add button)
-    renderRegisteredCourses(); // Refresh registered courses
+    updateCourseCard(courseId);
+    renderRegisteredCourses();
 
     // Show success message
     showSuccessMessage(`Successfully dropped ${course.courseName}.`);
@@ -316,34 +381,13 @@ function updateUserInStorage() {
  * Update a specific course card in the available courses list
  * For real-time seat count updates
  */
-function updateCourseCard(courseId, isNowAvailable) {
-    const course = allCourses.find(c => c.id === courseId);
+function updateCourseCard(courseId) {
+    const course = allCourses.find((c) => c.id === courseId);
     if (!course) return;
-
-    // Update seats display
-    const seatsElement = document.getElementById(`seats-${courseId}`);
-    if (seatsElement) {
-        seatsElement.textContent = course.seats;
-    }
-
-    // Update button
-    const card = seatsElement ? seatsElement.closest('.course-card') : null;
-    if (card) {
-        const button = card.querySelector('.btn');
-        if (button) {
-            if (isNowAvailable) {
-                button.textContent = 'Add Course';
-                button.className = 'btn add-course';
-                button.removeEventListener('click', dropCourse);
-                button.addEventListener('click', () => addCourse(courseId));
-            } else {
-                button.textContent = 'Drop Course';
-                button.className = 'btn drop-course';
-                button.removeEventListener('click', addCourse);
-                button.addEventListener('click', () => dropCourse(courseId));
-            }
-        }
-    }
+    const card = document.querySelector(`[data-course-card="${courseId}"]`);
+    if (!card) return;
+    const isRegistered = currentUser.courses.some((c) => c.id === courseId);
+    card.replaceWith(createCourseCard(course, isRegistered));
 }
 
 // ========== MESSAGE DISPLAY ==========
@@ -361,23 +405,25 @@ function showSuccessMessage(message) {
     showMessage(message, 'success');
 }
 
-/**
- * Show message in a temporary overlay or alert
- */
-function showMessage(message, type) {
-    // For simplicity, use alert. In a real app, use a proper notification system
-    if (type === 'error') {
-        alert('Error: ' + message);
-    } else {
-        alert('Success: ' + message);
-    }
+let toastTimer = null;
 
-    // Alternative: Create a message element
-    // const messageElement = document.createElement('div');
-    // messageElement.className = `message ${type}`;
-    // messageElement.textContent = message;
-    // document.body.appendChild(messageElement);
-    // setTimeout(() => messageElement.remove(), 3000);
+function showMessage(message, type) {
+    const toast = document.getElementById('toast');
+    if (!toast) {
+        window.alert(type === 'error' ? 'Error: ' + message : message);
+        return;
+    }
+    toast.textContent = message;
+    toast.classList.remove('hidden', 'pointer-events-none');
+    toast.className =
+        'fixed bottom-6 left-1/2 z-50 max-w-md -translate-x-1/2 rounded-lg border px-lg py-md font-body-sm shadow-lg ' +
+        (type === 'error'
+            ? 'border-error/30 bg-error-container text-on-error-container'
+            : 'border-outline-variant bg-inverse-surface text-inverse-on-surface');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+        toast.classList.add('hidden', 'pointer-events-none');
+    }, 3200);
 }
 
 // ========== UTILITY FUNCTIONS ==========

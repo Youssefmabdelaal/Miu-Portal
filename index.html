@@ -1,29 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart University Course Registration System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>EduReg — Smart University</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="js/edureg-tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/edureg-global.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 </head>
-<body>
-    <header>
-        <h1>Smart University Course Registration System</h1>
-        <nav>
-            <a href="pages/register.html" class="btn">Get Started</a>
-            <a href="pages/login.html" class="btn">Login</a>
-        </nav>
-    </header>
-    <main>
-        <section class="hero">
-            <h2>Welcome to Smart University</h2>
-            <p>Register for courses efficiently and manage your academic journey.</p>
-            <a href="pages/register.html" class="btn">Get Started</a>
-        </section>
+<body class="bg-surface text-on-surface min-h-screen antialiased">
+    <main class="flex min-h-screen flex-col lg:flex-row">
+        <div class="relative flex min-h-[320px] flex-1 flex-col justify-between overflow-hidden bg-primary p-xl text-on-primary lg:min-h-screen lg:w-1/2"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDeYYgSmIRVS3BTCDzFehRn8IE2M2XADAZM2R8i_qAtWU-F8B1lpDti5BhXpeFGDqWiz1meuCjFA6X6NyDX9OV6RiuUDgl6siXrbQET_6JsB7j_pL-tV6KBteHgIVQ_bRa0jiTMzhe_9mbzBRyqgkN8uRBUDC4gVY4kyN1gLybREFR8IlshYpvKhLCy1gvrJuYrvZsfMR5jAznfEPOG6T35Kd78CbWvwt-68wqqwxYED6eg3xA1hCcxrPe3tq5lbWOkrbGajJgv3qQ'); background-size: cover; background-position: center;">
+            <div class="absolute inset-0 z-0 bg-primary/85 mix-blend-multiply"></div>
+            <div class="absolute inset-0 z-0 bg-gradient-to-t from-primary/90 to-transparent"></div>
+            <div class="relative z-10 flex flex-1 flex-col justify-center px-lg pt-16 pb-lg lg:pt-24">
+                <div class="mb-lg flex items-center gap-sm">
+                    <span class="material-symbols-outlined icon-filled text-[40px] text-on-primary">school</span>
+                    <span class="font-headline-md text-headline-md text-on-primary">EduReg</span>
+                </div>
+                <h1 class="font-display text-display max-w-lg text-on-primary">Manage your academic journey with precision.</h1>
+                <p class="mt-sm max-w-md font-body-lg text-body-lg text-primary-fixed-dim">Course registration, scheduling, and degree progress — built for Smart University.</p>
+            </div>
+            <div class="relative z-10 flex items-center gap-sm px-lg pb-12">
+                <div class="flex -space-x-2">
+                    <img alt="" class="h-8 w-8 rounded-full border-2 border-primary object-cover" width="32" height="32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWHikUCx4nGGQ3XVwD-11T6_CbnB6cnTX5227zmYFUzQHmCdalGEGvOeibLEiU4jqQHA2ZXSeSjpu1xBprnx4VOTy8vRACc0SpxEB7A97zwu1jf046rLuYEFtTu1NTvaKtRxINDVBomNBnaaClKB4Fn916XqntaT7U15FHezO-c_fByhTOgrUFXDSdfmSy8RuDTI_iR0aOML4BEjZSKP31kMXAqu2dpy8zlZJzMiG0z8YXCfP1qWw2VbStAiCoD1fUfjfoy2o1Li8">
+                    <img alt="" class="h-8 w-8 rounded-full border-2 border-primary object-cover" width="32" height="32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV7Ay1AdrSSYRQpTFz9h8OUuGvCRsmMgXZynvJXkdmZETuM9fVUueMlu33f0uzLFdXqRQnZlv6WS72sHaRejkt7ms2kCSlo-_UiW3smH_sM1sOfvFKabUM6yn1gDQSTLMwrXZXON1HwZan7Bh_TlUJh1OijJz3ENIfPUvet7PwA-8nnKBP9C-ky4kgqWoah7IZzmd2dudpAJY9rQS8Gcs21JcwD2Vcdm8N3r0s6IY_4Z1xbiodvXP8acuxRX6UUv3AzVIw0o0VPoc">
+                    <img alt="" class="h-8 w-8 rounded-full border-2 border-primary object-cover" width="32" height="32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUpfRuR436rh7IDnmTqNiCyrc8CtQVgOiSaEPMYw6-RomD1eE1pJwgDfWYYmIitNR7cqaIekIf40Z5VE2qYpfEjO5LfYndO53d8FbNGAEPq1nHxSD6lVfKD0BYSkfrLoYgDEDk5b8I1RpSQd7HiMHc1QNpSigFODHzZiwVQ7DeHAR1drYL1X_YQHMV8Kv2LuXzsgw61dbnGqNQ8tKhOHY17msuSffoe_F5NFqo5R4vf6SCW0AyCqtSibCUW3mQgxDmBY4r37tmgy8">
+                </div>
+                <p class="font-label-sm text-label-sm text-primary-fixed-dim">Trusted by students and faculty worldwide.</p>
+            </div>
+        </div>
+        <div class="flex flex-1 flex-col justify-center bg-surface-container-lowest p-md md:p-xl lg:w-1/2">
+            <div class="mx-auto w-full max-w-[420px]">
+                <div class="mb-xl flex items-center justify-center gap-sm lg:hidden">
+                    <span class="material-symbols-outlined icon-filled text-[32px] text-primary">school</span>
+                    <span class="font-headline-md text-headline-md text-on-surface">EduReg</span>
+                </div>
+                <h2 class="text-center font-headline-lg text-headline-lg text-on-surface lg:text-left">Welcome</h2>
+                <p class="mt-xs text-center font-body-md text-body-md text-on-surface-variant lg:text-left">Smart University course registration portal.</p>
+                <div class="mt-xl flex flex-col gap-md">
+                    <a href="pages/register.html" class="flex w-full items-center justify-center gap-sm rounded-lg bg-primary py-[12px] font-label-md text-label-md text-on-primary shadow-[0_1px_2px_0_rgba(0,0,0,0.05),0_4px_6px_-1px_rgba(0,0,0,0.1)] transition-all duration-200 hover:bg-surface-tint hover:-translate-y-px active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-[20px]">person_add</span>
+                        Create student account
+                    </a>
+                    <a href="pages/login.html" class="flex w-full items-center justify-center gap-sm rounded-lg border border-outline-variant bg-surface py-[12px] font-label-md text-label-md text-on-surface shadow-sm transition-colors hover:bg-surface-container-low">
+                        <span class="material-symbols-outlined text-[20px] text-primary">login</span>
+                        Log in
+                    </a>
+                </div>
+                <p class="mt-xl text-center font-body-sm text-body-sm text-on-surface-variant">
+                    Admin? Use <span class="font-medium text-on-surface">admin@smartuniversity.com</span> on the login page.
+                </p>
+            </div>
+        </div>
     </main>
-    <footer>
-        <p>&copy; 2026 Smart University. All rights reserved.</p>
-    </footer>
-    <script src="../js/script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

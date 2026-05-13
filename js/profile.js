@@ -102,6 +102,10 @@ function setCurrentUser(user) {
 function showMessage(element, text, type) {
     if (!element) return;
     element.textContent = text;
-    element.classList.remove('error', 'success');
-    element.classList.add(type);
+    const base = 'rounded-lg border px-md py-sm font-body-sm text-body-sm ';
+    if (type === 'error') {
+        element.className = base + 'border-error/30 bg-error-container text-on-error-container';
+    } else {
+        element.className = base + 'border-primary-fixed-dim bg-primary-fixed text-on-primary-fixed';
+    }
 }

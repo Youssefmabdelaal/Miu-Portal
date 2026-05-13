@@ -111,14 +111,15 @@ function validateForm() {
         isValid = false;
     }
     
+    const courseCodeNorm = courseCode.toUpperCase();
     // Validate Course Code (format: letters + numbers, e.g., CS101)
     if (courseCode === '') {
         showFieldError('courseCode', 'Course code is required');
         isValid = false;
-    } else if (!/^[A-Z]{2,4}\d{3,4}$/.test(courseCode)) {
+    } else if (!/^[A-Z]{2,4}\d{3,4}$/.test(courseCodeNorm)) {
         showFieldError('courseCode', 'Invalid format (e.g., CS101). Use 2-4 letters followed by 3-4 digits');
         isValid = false;
-    } else if (isCourseDuplicate(courseCode)) {
+    } else if (isCourseDuplicate(courseCodeNorm)) {
         showFieldError('courseCode', 'This course code already exists');
         isValid = false;
     }
@@ -154,8 +155,8 @@ function validateForm() {
     if (room === '') {
         showFieldError('room', 'Room number is required');
         isValid = false;
-    } else if (!/^[A-Z]\d{3}$/.test(room)) {
-        showFieldError('room', 'Invalid format (e.g., A401). Use 1 letter followed by 3 digits');
+    } else if (room.length < 2) {
+        showFieldError('room', 'Please enter a room or location (at least 2 characters)');
         isValid = false;
     }
     
@@ -167,8 +168,9 @@ function validateForm() {
  * Excludes the current course being edited
  */
 function isCourseDuplicate(courseCode) {
-    return courses.some(course => 
-        course.courseCode === courseCode && 
+    const norm = courseCode.toUpperCase();
+    return courses.some(course =>
+        String(course.courseCode || '').toUpperCase() === norm &&
         course.id !== currentEditingCourseId
     );
 }
@@ -212,7 +214,7 @@ function handleFormSubmit(e) {
     // Get form values
     const courseData = {
         courseName: document.getElementById('courseName').value.trim(),
-        courseCode: document.getElementById('courseCode').value.trim(),
+        courseCode: document.getElementById('courseCode').value.trim().toUpperCase(),
         instructor: document.getElementById('instructor').value.trim(),
         seats: parseInt(document.getElementById('seats').value),
         schedule: document.getElementById('schedule').value.trim(),
@@ -442,6 +444,7 @@ function renderCoursesTable() {
     // Check if there are courses
     if (courses.length === 0) {
         tableBody.innerHTML = '';
+        emptyState.textContent = 'No courses found. Add a new course to get started.';
         emptyState.style.display = 'block';
         return;
     }
@@ -465,9 +468,7 @@ function renderCoursesTable() {
             <td><strong>${escapeHtml(course.courseCode)}</strong></td>
             <td>${escapeHtml(course.instructor)}</td>
             <td>
-                <span style="background: #3498db; color: white; padding: 0.3rem 0.6rem; border-radius: 3px;">
-                    ${course.seats - course.enrolledStudents}/${course.seats}
-                </span>
+                <span class="inline-block rounded-md bg-surface-container-high px-sm py-xs font-label-sm text-on-surface-variant">${escapeHtml(String(course.seats))}</span>
             </td>
             <td>${escapeHtml(course.schedule)}</td>
             <td>${escapeHtml(course.room)}</td>
@@ -543,9 +544,7 @@ function displayFilteredCourses(filteredCourses) {
             <td><strong>${escapeHtml(course.courseCode)}</strong></td>
             <td>${escapeHtml(course.instructor)}</td>
             <td>
-                <span style="background: #3498db; color: white; padding: 0.3rem 0.6rem; border-radius: 3px;">
-                    ${course.seats - course.enrolledStudents}/${course.seats}
-                </span>
+                <span class="inline-block rounded-md bg-surface-container-high px-sm py-xs font-label-sm text-on-surface-variant">${escapeHtml(String(course.seats))}</span>
             </td>
             <td>${escapeHtml(course.schedule)}</td>
             <td>${escapeHtml(course.room)}</td>
