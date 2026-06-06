@@ -1,1 +1,117 @@
-<!-- Courses Part 3 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Catalog — MIU Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../js/edureg-tailwind-config.js"></script>
+    <link rel="stylesheet" href="../css/edureg-global.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+</head>
+<body class="flex h-screen overflow-hidden bg-background font-body-md text-on-background">
+    <nav class="z-40 hidden h-full w-[280px] shrink-0 flex-col gap-sm border-r border-outline-variant bg-surface-container-low p-md md:flex">
+        <div class="mb-lg flex items-center gap-sm px-sm">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
+                <span class="material-symbols-outlined icon-filled">school</span>
+            </div>
+            <div>
+                <h1 class="font-headline-sm text-headline-sm font-bold text-primary">MIU Portal</h1>
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Academic Portal</p>
+            </div>
+        </div>
+        <a href="courses.html" class="mb-md flex w-full items-center justify-center gap-sm rounded-lg bg-primary px-md py-sm font-label-md text-label-md text-on-primary shadow-sm transition-colors duration-200 hover:bg-primary-container hover:text-on-primary-container">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Register for Classes
+        </a>
+        <div class="flex flex-1 flex-col gap-xs overflow-y-auto">
+            <a class="flex items-center gap-sm rounded-lg px-md py-sm text-on-surface-variant transition-all duration-150 hover:bg-surface-container-highest" href="student-dashboard.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-label-md text-label-md">Dashboard</span>
+            </a>
+            <a class="flex scale-[0.98] items-center gap-sm rounded-lg bg-primary-container px-md py-sm font-bold text-on-primary-container shadow-sm transition-transform" href="courses.html">
+                <span class="material-symbols-outlined icon-filled">search</span>
+                <span class="font-label-md text-label-md">Course Search</span>
+            </a>
+            <a class="flex items-center gap-sm rounded-lg px-md py-sm text-on-surface-variant transition-all duration-150 hover:bg-surface-container-highest" href="schedule.html">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="font-label-md text-label-md">My Schedule</span>
+            </a>
+            <a class="flex items-center gap-sm rounded-lg px-md py-sm text-on-surface-variant transition-all duration-150 hover:bg-surface-container-highest" href="cash-deposit.html">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="font-label-md text-label-md">Faculty Cash Deposit</span>
+            </a>
+            <a class="flex items-center gap-sm rounded-lg px-md py-sm text-on-surface-variant transition-all duration-150 hover:bg-surface-container-highest" href="profile.html">
+                <span class="material-symbols-outlined">person</span>
+                <span class="font-label-md text-label-md">Profile</span>
+            </a>
+        </div>
+        <div class="mt-auto flex flex-col gap-xs border-t border-outline-variant pt-md">
+            <a class="flex items-center gap-sm rounded-lg px-md py-sm text-on-surface-variant transition-all duration-150 hover:bg-surface-container-highest" href="#" data-logout>
+                <span class="material-symbols-outlined">logout</span>
+                <span class="font-label-md text-label-md">Log Out</span>
+            </a>
+        </div>
+    </nav>
+    <main class="flex flex-1 flex-col overflow-hidden bg-background">
+        <header class="z-30 shrink-0 border-b border-outline-variant bg-surface px-lg py-md">
+            <div class="flex items-center justify-between gap-lg">
+                <h2 class="hidden font-headline-md text-headline-md text-on-surface lg:block" data-i18n="course_catalog">Course Catalog</h2>
+                <div class="relative max-w-2xl flex-1">
+                    <span class="material-symbols-outlined pointer-events-none absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input id="search-input" data-i18n="search_placeholder" class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-sm pl-[40px] pr-md font-body-md text-body-md text-on-surface shadow-sm outline-none transition-shadow placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Search by course code, title, or instructor…" type="search">
+                </div>
+                <div class="flex items-center gap-sm">
+                    <a href="student-dashboard.html" class="hidden rounded-full p-sm text-secondary transition-colors hover:bg-surface-container-high hover:text-primary md:inline-flex" aria-label="Home">
+                        <span class="material-symbols-outlined">home</span>
+                    </a>
+                    <select id="lang-toggle" class="rounded-lg border border-outline-variant bg-surface-container-lowest py-[2px] px-sm font-label-sm outline-none">
+                        <option value="en">EN</option>
+                        <option value="ar">AR</option>
+                    </select>
+                    <div class="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-outline-variant bg-primary-fixed shadow-sm">
+                        <img alt="" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZebVQuUAIJpGfxnIesVSwj_MbpeqkAm_HNHkT8Uw4LtDEOz52u3GrQWJgriUIOFRJq3p0m867-SGZZSZxJXO7SCBpYyNvf9OskShABQesvU3BP-M5iC57PVNjuVmk1LF9fcz58jqP6YX_1kuvFQBKHTFrIIykQQGe5B1EumgXWj9EnSzfLjFfgX8TMEcq1CsISiJF7dVbZ5b_Qhg1K9UPCXBIhd3nkNP8dTBRqlfA8Io7WhKo-AkMK0Uwa7ygW-7RhspNUhdPZfM" width="32" height="32">
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="flex-1 overflow-y-auto p-lg">
+            <section class="mb-lg rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm">
+                <h2 class="mb-md font-headline-sm text-headline-sm text-on-surface" data-i18n="billing_summary">Billing summary</h2>
+                <div id="billing-summary" class="font-body-sm text-on-surface-variant">
+                    <p>No enrolled courses yet.</p>
+                </div>
+            </section>
+            <div id="schedule-conflict-banner" class="mb-md hidden" role="alert"></div>
+            <div class="mb-md flex flex-col gap-sm sm:flex-row sm:items-center sm:justify-between">
+                <p class="font-body-sm text-body-sm text-secondary"><span data-i18n="showing">Showing</span> <span id="course-count" class="font-bold text-on-surface">0</span> <span data-i18n="courses_count">courses</span></p>
+            </div>
+            <h2 class="mb-md font-headline-sm text-headline-sm text-on-surface" data-i18n="available_courses">Available courses</h2>
+            <div id="courses-list" class="grid grid-cols-1 gap-md md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+            <div id="pagination-controls" class="mt-lg mb-xl flex flex-wrap items-center justify-center gap-sm"></div>
+            <h2 class="mb-md font-headline-sm text-headline-sm text-on-surface" data-i18n="my_registered">My registered courses</h2>
+            <div id="registered-courses" class="grid grid-cols-1 gap-md lg:grid-cols-2"></div>
+        </div>
+    </main>
+    <div id="payment-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-md">
+        <div id="payment-modal-overlay" class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10 w-full max-w-md rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-xl">
+            <h3 class="mb-md font-headline-sm text-on-surface">Course payment</h3>
+            <div id="payment-modal-body" class="font-body-sm text-on-surface-variant"></div>
+            <div class="mt-lg flex justify-end gap-sm">
+                <button type="button" id="payment-cancel" class="rounded-lg border border-outline-variant px-md py-sm font-label-md">Cancel</button>
+                <button type="button" id="payment-confirm" class="rounded-lg bg-primary px-md py-sm font-label-md text-on-primary">Confirm payment</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden max-w-md -translate-x-1/2 rounded-lg border border-outline-variant bg-inverse-surface px-lg py-md font-body-sm text-inverse-on-surface shadow-lg" role="status"></div>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/scheduleConflict.js"></script>
+    <script src="../js/courses.js"></script>
+    <script src="../js/edureg-layout.js"></script>
+</body>
+</html>

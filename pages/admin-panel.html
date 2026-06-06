@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management — MIU Portal Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../js/edureg-tailwind-config.js"></script>
+    <link rel="stylesheet" href="../css/edureg-global.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-surface font-body-md text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+    <nav aria-label="Main navigation" class="fixed left-0 top-0 z-40 hidden h-screen w-[280px] flex-col gap-sm border-r border-outline-variant bg-surface-container-low p-md md:flex">
+        <div class="mb-xl flex items-center gap-3 px-sm">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
+                <span class="material-symbols-outlined icon-filled text-on-primary">school</span>
+            </div>
+            <div>
+                <h1 class="font-headline-sm font-bold text-primary">MIU Portal</h1>
+                <p class="font-label-md text-on-surface-variant">Academic Portal</p>
+            </div>
+        </div>
+        <a href="courses.html" class="mb-lg flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 font-label-md text-on-primary shadow-sm transition-transform hover:-translate-y-px">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Register for Classes
+        </a>
+        <div class="flex flex-1 flex-col gap-1 overflow-y-auto">
+            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high" href="admin-dashboard.html">
+                <span class="material-symbols-outlined text-secondary">dashboard</span>
+                <span class="font-label-md">Admin dashboard</span>
+            </a>
+            <a class="flex scale-[0.98] items-center gap-3 rounded-lg bg-primary-container px-3 py-2 font-bold text-on-primary-container transition-transform" href="admin-panel.html">
+                <span class="material-symbols-outlined icon-filled">menu_book</span>
+                <span class="font-label-md">Course management</span>
+            </a>
+            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant hover:bg-surface-container-high" href="admin-students.html">
+                <span class="material-symbols-outlined text-secondary">groups</span>
+                <span class="font-label-md">Student roster</span>
+            </a>
+        </div>
+        <div class="mt-auto flex flex-col gap-1 border-t border-outline-variant pt-4">
+            <a href="#" data-logout class="logout-btn flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high">
+                <span class="material-symbols-outlined text-secondary">logout</span>
+                <span class="font-label-md">Log Out</span>
+            </a>
+        </div>
+    </nav>
+    <main class="min-h-screen w-full md:ml-[280px]">
+        <div class="mx-auto max-w-container-max p-4 md:p-lg">
+            <header class="mb-lg flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                    <div class="mb-1 flex items-center gap-2 font-label-sm text-secondary">
+                        <span>Admin Console</span>
+                        <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span class="text-primary">Course Management</span>
+                    </div>
+                    <h2 class="font-headline-lg tracking-tight text-on-surface">Courses</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="admin-students.html" class="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md shadow-sm transition-colors hover:bg-surface-container-low">Student roster</a>
+                </div>
+            </header>
+            <div class="mb-md flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+                <div class="relative w-full lg:w-[320px]">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-secondary">search</span>
+                    <input id="searchBox" type="search" placeholder="Search by code, title, or instructor…" class="w-full rounded-lg border border-outline-variant bg-surface py-2 pl-10 pr-3 font-body-sm text-on-surface shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] outline-none transition-shadow placeholder:text-secondary focus:border-primary focus:ring-1 focus:ring-primary">
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="refreshBtn" class="rounded-lg border border-outline-variant bg-surface px-3 py-1.5 font-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-low">Refresh</button>
+                </div>
+            </div>
+            <section class="form-section mb-lg rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm">
+                <h2 class="mb-4 font-headline-sm text-on-surface">Add / Edit course</h2>
+                <form id="courseForm" class="flex flex-col gap-4">
+                    <input type="hidden" id="courseId" value="">
+                    <div class="form-group">
+                        <label class="mb-1 block font-label-md text-on-surface" for="courseName">Course name *</label>
+                        <input type="text" id="courseName" name="courseName" required placeholder="Course title" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        <span class="error-message mt-1 block text-sm text-error" id="courseNameError"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1 block font-label-md text-on-surface" for="courseCode">Course code *</label>
+                        <input type="text" id="courseCode" name="courseCode" required placeholder="e.g. CS101" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm uppercase outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        <span class="error-message mt-1 block text-sm text-error" id="courseCodeError"></span>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="instructor">Instructor *</label>
+                            <input type="text" id="instructor" name="instructor" required class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="instructorError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="seats">Available seats *</label>
+                            <input type="number" id="seats" name="seats" min="1" max="500" required class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="seatsError"></span>
+                        </div>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-3">
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="creditHours">Credit hours *</label>
+                            <input type="number" id="creditHours" name="creditHours" min="1" max="4" required placeholder="1–4" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="creditHoursError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="fee">Course fee (USD) *</label>
+                            <input type="number" id="fee" name="fee" min="0" step="0.01" required placeholder="0.00" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="feeError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="schedule">Schedule *</label>
+                            <input type="text" id="schedule" name="schedule" required placeholder="Mon, Wed 10:00 AM" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="scheduleError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="room">Room *</label>
+                            <input type="text" id="room" name="room" required class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="roomError"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1 block font-label-md text-on-surface" for="description">Description</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Optional" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"></textarea>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="submit" id="submitBtn" class="rounded-lg bg-primary px-md py-sm font-label-md text-on-primary shadow-sm hover:bg-primary-container">Add Course</button>
+                        <button type="reset" id="resetBtn" class="rounded-lg border border-outline-variant bg-surface px-md py-sm font-label-md hover:bg-surface-container-low">Clear Form</button>
+                        <button type="button" id="cancelBtn" class="hidden rounded-lg border border-outline-variant px-md py-sm font-label-md text-error hover:bg-error-container">Cancel Edit</button>
+                    </div>
+                </form>
+                <div class="message-container mt-4 space-y-2">
+                    <div id="successMessage" class="hidden rounded-lg border border-primary/30 bg-primary-fixed px-md py-sm font-body-sm text-on-primary-fixed"></div>
+                    <div id="errorMessage" class="hidden rounded-lg border border-error/30 bg-error-container px-md py-sm font-body-sm text-on-error-container"></div>
+                </div>
+            </section>
+            <section class="table-section overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+                <h2 class="border-b border-outline-variant bg-surface-container-low px-md py-3 font-headline-sm text-on-surface">Manage courses</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-left" id="coursesTable">
+                        <thead>
+                            <tr class="border-b border-outline-variant bg-surface-container-lowest">
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">ID</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Course</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Code</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Instructor</th>
+                                <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Seats left</th>
+                                <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Credits</th>
+                                <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Fee</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Schedule</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Room</th>
+                                <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="font-body-sm text-on-surface"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="hidden p-8 text-center font-body-sm text-on-surface-variant">No courses found. Add a new course to get started.</div>
+                <div class="stats-container grid gap-4 border-t border-outline-variant bg-surface p-4 sm:grid-cols-2">
+                    <div class="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center shadow-sm">
+                        <h4 class="font-label-md text-secondary">Total courses</h4>
+                        <p class="mt-1 font-headline-md text-on-surface" id="totalCourses">0</p>
+                    </div>
+                    <div class="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center shadow-sm">
+                        <h4 class="font-label-md text-secondary">Total seats available</h4>
+                        <p class="mt-1 font-headline-md text-on-surface" id="totalSeats">0</p>
+                    </div>
+                </div>
+            </section>
+            <section id="view-enrollments" class="table-section mt-lg overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+                <h2 class="border-b border-outline-variant px-md py-3 font-headline-sm">View enrollments</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse" id="enrollmentsTable">
+                        <thead>
+                            <tr class="border-b border-outline-variant bg-surface-container-low">
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Course</th>
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Student</th>
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Email</th>
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Status</th>
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enrollmentsBody">
+                            <tr>
+                                <td colspan="5" class="px-md py-md font-body-sm text-on-surface-variant">No enrollment data yet. Students appear here after they register for courses.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div id="deleteModal" class="fixed inset-0 z-50 items-center justify-center bg-black/40 p-md" style="display: none;">
+        <div class="modal-overlay absolute inset-0" id="modalOverlay"></div>
+        <div class="relative z-10 w-full max-w-md rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-xl">
+            <h3 class="font-headline-sm text-on-surface">Confirm delete</h3>
+            <p class="mt-sm font-body-sm text-secondary">Are you sure you want to delete this course? This cannot be undone.</p>
+            <div class="mt-lg flex justify-end gap-2">
+                <button type="button" id="confirmDeleteBtn" class="rounded-lg bg-error px-md py-sm font-label-md text-on-error">Delete</button>
+                <button type="button" id="cancelDeleteBtn" class="rounded-lg border border-outline-variant px-md py-sm font-label-md">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/admin-panel.js"></script>
+    <script src="../js/edureg-layout.js"></script>
+</body>
+</html>

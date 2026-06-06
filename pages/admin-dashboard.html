@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — MIU Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../js/edureg-tailwind-config.js"></script>
+    <link rel="stylesheet" href="../css/edureg-global.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+</head>
+<body class="flex min-h-screen bg-surface font-body-md text-on-surface">
+    <nav class="fixed left-0 top-0 z-40 hidden h-screen w-[280px] flex-col gap-sm border-r border-outline-variant bg-surface-container-low p-md md:flex">
+        <div class="mb-lg flex items-center gap-3 px-sm">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
+                <span class="material-symbols-outlined icon-filled text-on-primary">school</span>
+            </div>
+            <div>
+                <h1 class="font-headline-sm font-bold text-primary">MIU Portal</h1>
+                <p class="font-label-md text-on-surface-variant">Admin</p>
+            </div>
+        </div>
+        <div class="flex flex-1 flex-col gap-1 overflow-y-auto">
+            <a class="flex scale-[0.98] items-center gap-3 rounded-lg bg-primary-container px-3 py-2 font-bold text-on-primary-container" href="admin-dashboard.html">
+                <span class="material-symbols-outlined icon-filled">dashboard</span>
+                <span class="font-label-md">Admin dashboard</span>
+            </a>
+            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high" href="admin-panel.html">
+                <span class="material-symbols-outlined text-secondary">menu_book</span>
+                <span class="font-label-md">Course management</span>
+            </a>
+            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant hover:bg-surface-container-high" href="admin-students.html">
+                <span class="material-symbols-outlined text-secondary">groups</span>
+                <span class="font-label-md">Student roster</span>
+            </a>
+        </div>
+        <div class="mt-auto border-t border-outline-variant pt-4">
+            <a href="#" data-logout class="flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant hover:bg-surface-container-high">
+                <span class="material-symbols-outlined text-secondary">logout</span>
+                <span class="font-label-md">Log Out</span>
+            </a>
+        </div>
+    </nav>
+    <main class="min-h-screen w-full md:ml-[280px]">
+        <div class="mx-auto max-w-container-max p-4 md:p-lg">
+            <header class="mb-lg">
+                <h2 class="font-headline-lg tracking-tight text-on-surface">Admin dashboard</h2>
+                <p class="mt-xs font-body-sm text-on-surface-variant">Overview of courses and students in the system.</p>
+            </header>
+            <div class="grid gap-md sm:grid-cols-2">
+                <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
+                    <div class="mb-sm flex items-center gap-sm text-secondary">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                        <span class="font-label-md uppercase tracking-wider">Total courses</span>
+                    </div>
+                    <p id="stat-total-courses" class="font-headline-lg text-on-surface">—</p>
+                    <a href="admin-panel.html" class="mt-md inline-block font-label-sm text-primary hover:underline">Manage courses →</a>
+                </div>
+                <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
+                    <div class="mb-sm flex items-center gap-sm text-secondary">
+                        <span class="material-symbols-outlined text-primary">groups</span>
+                        <span class="font-label-md uppercase tracking-wider">Total students</span>
+                    </div>
+                    <p id="stat-total-students" class="font-headline-lg text-on-surface">—</p>
+                    <a href="admin-students.html" class="mt-md inline-block font-label-sm text-primary hover:underline">View student roster →</a>
+                </div>
+            </div>
+            <div class="mt-lg grid gap-md md:grid-cols-2">
+                <a href="admin-panel.html" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm transition-shadow hover:shadow-md">
+                    <h3 class="font-headline-sm text-on-surface">Course management</h3>
+                    <p class="mt-xs font-body-sm text-on-surface-variant">Add, edit, delete courses and manage enrollments.</p>
+                </a>
+                <a href="admin-students.html" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-md shadow-sm transition-shadow hover:shadow-md">
+                    <h3 class="font-headline-sm text-on-surface">Student roster</h3>
+                    <p class="mt-xs font-body-sm text-on-surface-variant">Set GPA, visibility, and remove student accounts.</p>
+                </a>
+            </div>
+        </div>
+    </main>
+    <script src="../js/api.js"></script>
+    <script src="../js/admin-dashboard.js"></script>
+    <script src="../js/edureg-layout.js"></script>
+</body>
+</html>

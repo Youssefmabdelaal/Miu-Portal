@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIU Portal — Student Registration</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../js/edureg-tailwind-config.js"></script>
+    <link rel="stylesheet" href="../css/edureg-global.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+</head>
+<body class="flex min-h-screen items-center justify-center bg-background p-md font-body-md text-on-background antialiased">
+    <main class="w-full max-w-[480px] overflow-hidden rounded-xl border border-surface-container-highest bg-surface-container-lowest shadow-[0_1px_2px_0_rgba(0,0,0,0.05),_0_4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <header class="border-b border-surface-container-highest bg-surface-container-low px-lg py-xl text-center">
+            <h1 class="mb-sm font-display text-display tracking-tight text-primary">MIU Portal</h1>
+            <h2 class="font-headline-md text-headline-md text-on-surface">Create your account</h2>
+            <p class="mt-sm font-body-md text-body-md text-on-surface-variant">Join the next generation of academic administration.</p>
+        </header>
+        <form id="register-form" class="flex flex-col gap-lg p-lg">
+            <div class="mb-sm flex items-center gap-sm">
+                <div class="h-2 w-full rounded-full bg-primary"></div>
+                <div class="h-2 w-full rounded-full bg-surface-container-highest"></div>
+                <div class="h-2 w-full rounded-full bg-surface-container-highest"></div>
+            </div>
+            <p class="mb-md text-right font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Step 1 of 3: Personal Details</p>
+            <div id="form-message" class="hidden rounded-lg border px-md py-sm font-body-sm"></div>
+
+            <div class="flex flex-col gap-xs">
+                <label class="font-label-md text-label-md text-on-surface" for="name">Full Name</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
+                    <input class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-md font-body-md text-body-md text-on-surface shadow-inner transition-all placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="name" name="name" placeholder="Jane Doe" type="text" required autocomplete="name">
+                </div>
+            </div>
+            <div class="flex flex-col gap-xs">
+                <label class="font-label-md text-label-md text-on-surface" for="studentId">Student ID</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">badge</span>
+                    <input class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-md font-body-md text-body-md text-on-surface shadow-inner transition-all placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="studentId" name="studentId" placeholder="e.g. 100123456" type="text" required autocomplete="username">
+                </div>
+            </div>
+            <div class="flex flex-col gap-xs">
+                <label class="font-label-md text-label-md text-on-surface" for="email">University Email</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+                    <input class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-md font-body-md text-body-md text-on-surface shadow-inner transition-all placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="email" name="email" placeholder="jane.doe@university.edu" type="email" required autocomplete="email">
+                </div>
+            </div>
+            <div class="flex flex-col gap-xs">
+                <label class="font-label-md text-label-md text-on-surface" for="department">Department</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">account_balance</span>
+                    <select class="w-full appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-xl font-body-md text-body-md text-on-surface shadow-inner transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="department" name="department" required>
+                        <option value="" disabled selected>Select your department…</option>
+                        <option value="cs">Computer Science</option>
+                        <option value="eng">Engineering</option>
+                        <option value="bus">Business Administration</option>
+                        <option value="arts">Liberal Arts</option>
+                        <option value="sci">Natural Sciences</option>
+                    </select>
+                    <span class="material-symbols-outlined pointer-events-none absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant">expand_more</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-lg sm:flex-row">
+                <div class="flex flex-1 flex-col gap-xs">
+                    <label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+                        <input class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-md font-body-md text-body-md text-on-surface shadow-inner transition-all placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="flex flex-1 flex-col gap-xs">
+                    <label class="font-label-md text-label-md text-on-surface" for="confirm-password">Confirm Password</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined pointer-events-none absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">lock_reset</span>
+                        <input class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-md pl-[48px] pr-md font-body-md text-body-md text-on-surface shadow-inner transition-all placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" id="confirm-password" name="confirm-password" placeholder="••••••••" type="password" required autocomplete="new-password">
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-lg bg-surface-container-low p-sm">
+                <div id="strength-bar" class="mb-xs h-2 w-full rounded-full bg-surface-container-highest transition-all" style="width:0%"></div>
+                <p id="strength-text" class="m-0 font-body-sm text-body-sm text-on-surface-variant">Password strength: <span>Empty</span></p>
+            </div>
+            <div class="mt-sm flex items-start gap-sm">
+                <div class="flex h-5 items-center">
+                    <input class="h-4 w-4 cursor-pointer rounded border-outline-variant bg-surface-container-lowest text-primary focus:ring-2 focus:ring-primary" id="terms" name="terms" type="checkbox" required>
+                </div>
+                <label class="cursor-pointer font-body-sm text-body-sm text-on-surface-variant" for="terms">
+                    I agree to the <a class="text-primary underline transition-colors hover:text-primary-fixed-dim" href="#">Terms of Service</a> and <a class="text-primary underline transition-colors hover:text-primary-fixed-dim" href="#">Privacy Policy</a>.
+                </label>
+            </div>
+            <div class="mt-md flex flex-col gap-md">
+                <button class="flex w-full items-center justify-center gap-sm rounded-lg bg-primary py-md font-label-md text-label-md text-on-primary shadow-sm transition-all duration-200 hover:bg-on-primary-fixed-variant" type="submit">
+                    Create account
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+                <div class="text-center">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Already have an account?</span>
+                    <a class="ml-xs font-label-md text-label-md text-primary transition-colors hover:text-primary-fixed-dim" href="login.html">Log in here</a>
+                </div>
+                <p class="text-center font-body-sm"><a class="text-on-surface-variant hover:text-primary" href="../index.html">← Home</a></p>
+            </div>
+        </form>
+    </main>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+</html>
