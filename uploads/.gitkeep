@@ -1,0 +1,6 @@
+# Environment (copy to .env)
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/smart_university
+SESSION_SECRET=your-long-random-secret-here
+NODE_ENV=development
+SESSION_SECURE=false
