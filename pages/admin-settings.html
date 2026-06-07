@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Settings — EduReg Admin</title>
+    <title>System Settings — MIU Portal Admin</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="../js/edureg-tailwind-config.js"></script>
     <link rel="stylesheet" href="../css/edureg-global.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 </head>
-<body class="flex h-screen overflow-hidden bg-background font-body-md antialiased">
-    <script>
-        try {
-            var u = JSON.parse(localStorage.getItem('smartUniversityCurrentUser') || 'null');
-            if (!u || u.role !== 'admin') location.href = 'login.html';
-        } catch (e) { location.href = 'login.html'; }
-    </script>
+<body class="flex h-screen overflow-hidden bg-background font-body-md antialiased" data-auth-role="admin">
     <nav class="fixed left-0 top-0 z-40 hidden h-screen w-[280px] border-r border-outline-variant bg-surface-container-low md:block">
         <div class="flex h-full flex-col gap-sm p-md">
             <div class="mb-xl flex items-center gap-md px-sm pt-sm">
@@ -24,11 +18,11 @@
                     <span class="material-symbols-outlined icon-filled text-on-primary">account_balance</span>
                 </div>
                 <div>
-                    <h1 class="truncate font-headline-sm font-bold text-primary">Smart University</h1>
+                    <h1 class="truncate font-headline-sm font-bold text-primary">MIU Portal</h1>
                     <p class="truncate font-label-md text-secondary">Academic Portal</p>
                 </div>
             </div>
-            <a href="admin-dashboard.html" class="flex items-center gap-md rounded-lg px-md py-sm text-on-surface-variant hover:bg-surface-container-highest"><span class="material-symbols-outlined text-secondary">dashboard</span><span class="font-label-md">Overview</span></a>
+            <a href="admin-dashboard.html" class="flex items-center gap-md rounded-lg px-md py-sm text-on-surface-variant hover:bg-surface-container-highest"><span class="material-symbols-outlined text-secondary">dashboard</span><span class="font-label-md">Admin dashboard</span></a>
             <a href="admin-panel.html" class="flex items-center gap-md rounded-lg px-md py-sm text-on-surface-variant hover:bg-surface-container-highest"><span class="material-symbols-outlined text-secondary">menu_book</span><span class="font-label-md">Courses</span></a>
             <a href="admin-students.html" class="flex items-center gap-md rounded-lg px-md py-sm text-on-surface-variant hover:bg-surface-container-highest"><span class="material-symbols-outlined text-secondary">groups</span><span class="font-label-md">Students</span></a>
             <a href="admin-settings.html" class="flex scale-[0.98] items-center gap-md rounded-lg bg-primary-container px-md py-sm font-bold text-on-primary-container">
@@ -96,6 +90,7 @@
             </div>
         </div>
     </main>
+    <script src="../js/api.js"></script>
     <script src="../js/edureg-layout.js"></script>
 </body>
 </html>

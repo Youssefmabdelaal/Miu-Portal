@@ -1,30 +1,16 @@
-// Authentication — EduReg / Smart University (localStorage)
-
-const STORAGE_USERS_KEY = 'smartUniversityUsers';
-const STORAGE_CURRENT_USER_KEY = 'smartUniversityCurrentUser';
-
-const DEFAULT_ADMIN = {
-  name: 'Administrator',
-  email: 'admin@smartuniversity.com',
-  studentId: 'ADMIN001',
-  password: 'Admin123!',
-  role: 'admin',
-  department: 'Administration',
-  courses: [],
-};
+// Authentication — MIU Portal (REST API + sessions)
 
 window.addEventListener('DOMContentLoaded', () => {
-  initializeAdminAccount();
   setupRegisterForm();
   setupLoginForm();
+  handleSessionExpiredAlert();
 });
 
-function initializeAdminAccount() {
-  const users = getStoredUsers();
-  const adminExists = users.some((user) => user.role === 'admin');
-  if (!adminExists) {
-    users.push(DEFAULT_ADMIN);
-    saveUsers(users);
+function handleSessionExpiredAlert() {
+  const params = new URLSearchParams(window.location.search);
+  const alert = document.getElementById('session-alert');
+  if (params.get('expired') === '1' && alert) {
+    alert.classList.remove('hidden');
   }
 }
 
@@ -76,29 +62,11 @@ function setupLoginForm() {
 
   if (showPasswordCheckbox && passwordInput) {
     showPasswordCheckbox.addEventListener('change', () => {
-      const type = showPasswordCheckbox.checked ? 'text' : 'password';
-      passwordInput.type = type;
+      passwordInput.type = showPasswordCheckbox.checked ? 'text' : 'password';
     });
   }
 
   loginForm.addEventListener('submit', handleLogin);
-}
-
-function getStoredUsers() {
-  const storedValue = localStorage.getItem(STORAGE_USERS_KEY);
-  try {
-    return storedValue ? JSON.parse(storedValue) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(users) {
-  localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
-}
-
-function setCurrentUser(user) {
-  localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(user));
 }
 
 function validateEmail(email) {
@@ -111,16 +79,6 @@ function validateIdentifier(raw) {
   if (!id) return false;
   if (id.includes('@')) return validateEmail(id);
   return /^[A-Za-z0-9._-]{4,32}$/.test(id);
-}
-
-function findUserByIdentifier(users, raw) {
-  const id = raw.trim();
-  const lower = id.toLowerCase();
-  return users.find((u) => {
-    if (u.email && u.email.toLowerCase() === lower) return true;
-    if (u.studentId && String(u.studentId).toLowerCase() === lower) return true;
-    return false;
-  });
 }
 
 function validatePassword(password) {
@@ -163,7 +121,7 @@ function updatePasswordStrength(password, barElement, textElement) {
   }
 }
 
-function handleRegister(event) {
+async function handleRegister(event) {
   event.preventDefault();
   const nameEl = document.getElementById('name');
   const studentIdEl = document.getElementById('studentId');
@@ -178,6 +136,7 @@ function handleRegister(event) {
   const confirmPassword = document.getElementById('confirm-password').value;
   const department = departmentEl ? departmentEl.value : '';
   const messageElement = document.getElementById('form-message');
+  const submitBtn = event.target.querySelector('button[type="submit"]');
 
   if (!name || !studentId || !email || !password || !confirmPassword) {
     showMessage(messageElement, 'Please complete all required fields.', 'error');
@@ -218,42 +177,33 @@ function handleRegister(event) {
     return;
   }
 
-  const users = getStoredUsers();
-  if (users.some((u) => u.email === email)) {
-    showMessage(messageElement, 'This email is already registered. Please log in instead.', 'error');
-    return;
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    await EduRegAPI.apiRequest('/api/auth/student/register', {
+      method: 'POST',
+      body: { name, studentId, email, password, department },
+    });
+
+    showMessage(messageElement, 'Registration successful! Redirecting to login…', 'success');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1200);
+  } catch (error) {
+    showMessage(messageElement, error.message || 'Registration failed.', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
-  if (users.some((u) => u.studentId && String(u.studentId).toLowerCase() === studentId.toLowerCase())) {
-    showMessage(messageElement, 'This Student ID is already registered.', 'error');
-    return;
-  }
-
-  const newUser = {
-    name,
-    studentId,
-    email,
-    department,
-    password,
-    role: 'student',
-    courses: [],
-  };
-
-  users.push(newUser);
-  saveUsers(users);
-  showMessage(messageElement, 'Registration successful! Redirecting to login…', 'success');
-
-  setTimeout(() => {
-    window.location.href = 'login.html';
-  }, 1200);
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   const identifierEl = document.getElementById('identifier');
   const emailLegacy = document.getElementById('email');
   const rawId = (identifierEl ? identifierEl.value : emailLegacy ? emailLegacy.value : '').trim();
   const password = document.getElementById('password').value;
   const messageElement = document.getElementById('form-message');
+  const submitBtn = event.target.querySelector('button[type="submit"]');
 
   if (!rawId || !password) {
     showMessage(messageElement, 'Please enter your email or Student ID and password.', 'error');
@@ -265,38 +215,39 @@ function handleLogin(event) {
     return;
   }
 
-  const users = getStoredUsers();
-  const account = findUserByIdentifier(users, rawId);
+  if (submitBtn) submitBtn.disabled = true;
 
-  if (!account || account.password !== password) {
-    showMessage(messageElement, 'Login failed. Check your credentials and try again.', 'error');
-    return;
+  try {
+    const data = await EduRegAPI.apiRequest('/api/auth/login', {
+      method: 'POST',
+      body: { identifier: rawId, password },
+    });
+
+    EduRegAPI.cacheUser(data.data.user);
+    showMessage(messageElement, 'Login successful! Redirecting…', 'success');
+
+    setTimeout(() => {
+      if (data.data.user.role === 'admin') {
+        window.location.href = 'admin-dashboard.html';
+      } else {
+        window.location.href = 'student-dashboard.html';
+      }
+    }, 900);
+  } catch (error) {
+    showMessage(messageElement, error.message || 'Login failed. Check your credentials and try again.', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
-
-  setCurrentUser(account);
-  showMessage(messageElement, 'Login successful! Redirecting…', 'success');
-
-  setTimeout(() => {
-    if (account.role === 'admin') {
-      window.location.href = 'admin-dashboard.html';
-    } else {
-      window.location.href = 'student-dashboard.html';
-    }
-  }, 900);
 }
 
 function showMessage(element, text, type) {
   if (!element) return;
   element.textContent = text;
-  const base =
-    'rounded-lg border px-md py-sm font-body-sm text-body-sm ';
+  element.classList.remove('hidden');
+  const base = 'rounded-lg border px-md py-sm font-body-sm text-body-sm ';
   if (type === 'error') {
-    element.className =
-      base +
-      'border-error/30 bg-error-container text-on-error-container';
+    element.className = base + 'border-error/30 bg-error-container text-on-error-container';
   } else {
-    element.className =
-      base +
-      'border-primary-fixed-dim bg-primary-fixed text-on-primary-fixed';
+    element.className = base + 'border-primary-fixed-dim bg-primary-fixed text-on-primary-fixed';
   }
 }

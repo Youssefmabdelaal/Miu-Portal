@@ -1,488 +1,369 @@
+const FACULTY_LABELS = {
+  cs: 'Computer Science',
+  eng: 'Engineering',
+  bus: 'Business Administration',
+  arts: 'Liberal Arts',
+  sci: 'Natural Sciences',
+};
 
-let courses = []; // Store all courses
-let currentEditingCourseId = null; // Track which course is being edited
-let courseToDelete = null; // Track which course is being deleted
+function getFacultyLabel(value) {
+  return FACULTY_LABELS[value] || value || '—';
+}
 
-const STORAGE_CURRENT_USER_KEY = 'smartUniversityCurrentUser';
+let courses = [];
+let currentEditingCourseId = null;
+let courseToDelete = null;
 
-// ========== INITIALIZATION ==========
-// Run when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✓ Admin Panel Loaded');
-    
-    // Check if user is admin
-    if (!isAdmin()) {
-        alert('Access denied. Admin privileges required.');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // Load initial data
-    loadCoursesFromStorage();
-    
-    // Attach event listeners
-    attachEventListeners();
-    
-    // Render the table
-    renderCoursesTable();
-    updateStats();
+document.addEventListener('DOMContentLoaded', async function () {
+  const user = await EduRegAPI.requireAuth({ role: 'admin' });
+  if (!user) return;
+
+  await loadCoursesFromAPI();
+  await loadEnrollmentsFromAPI();
+  attachEventListeners();
+  renderCoursesTable();
+  renderEnrollmentsTable();
+  updateStats();
 });
 
-// Function to check if current user is admin
-function isAdmin() {
-    const storedUser = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
-    if (!storedUser) return false;
-    try {
-        const user = JSON.parse(storedUser);
-        return user.role === 'admin';
-    } catch (error) {
-        return false;
-    }
-}
-
-// ========== EVENT LISTENERS ==========
 function attachEventListeners() {
-    // Form submission
-    document.getElementById('courseForm').addEventListener('submit', handleFormSubmit);
-    
-    // Form reset
-    document.getElementById('resetBtn').addEventListener('click', resetForm);
-    
-    // Cancel edit button
-    document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
-    
-    // Search input
-    document.getElementById('searchBox').addEventListener('keyup', handleSearch);
-    
-    // Refresh button
-    document.getElementById('refreshBtn').addEventListener('click', function() {
-        loadCoursesFromStorage();
-        renderCoursesTable();
-        showSuccessMessage('Courses refreshed successfully!');
+  document.getElementById('courseForm').addEventListener('submit', handleFormSubmit);
+  document.getElementById('resetBtn').addEventListener('click', resetForm);
+  document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+  document.getElementById('searchBox').addEventListener('keyup', handleSearch);
+  document.getElementById('refreshBtn').addEventListener('click', async function () {
+    await loadCoursesFromAPI();
+    renderCoursesTable();
+    showSuccessMessage('Courses refreshed successfully!');
+  });
+  document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+  document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+  document.getElementById('modalOverlay').addEventListener('click', closeDeleteModal);
+
+  const enrollmentsBody = document.getElementById('enrollmentsBody');
+  if (enrollmentsBody) {
+    enrollmentsBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.drop-enrollment-btn');
+      if (!btn) return;
+      e.preventDefault();
+      const enrollmentId = btn.getAttribute('data-enrollment-id');
+      if (enrollmentId) adminDropEnrollment(enrollmentId, btn);
     });
-    
-    // Modal buttons
-    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
-    document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
-    document.getElementById('modalOverlay').addEventListener('click', closeDeleteModal);
-    
-    // Logout button
-    document.querySelector('.logout-btn').addEventListener('click', handleLogout);
+  }
+
+  const logoutBtn = document.querySelector('.logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
 }
 
-// ========== LOGOUT FUNCTION ==========
-function handleLogout(e) {
-    e.preventDefault();
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
-        alert('Logged out successfully!');
-        window.location.href = 'login.html';
-    }
+async function handleLogout(e) {
+  e.preventDefault();
+  if (confirm('Are you sure you want to logout?')) {
+    await EduRegAPI.apiLogout();
+    window.location.href = 'login.html';
+  }
 }
 
-// ========== FORM VALIDATION ==========
-/**
- * Validates all form inputs
- * Returns true if all validations pass, false otherwise
- */
 function validateForm() {
-    // Clear previous errors
-    clearFormErrors();
-    
-    let isValid = true;
-    
-    // Get form values
-    const courseName = document.getElementById('courseName').value.trim();
-    const courseCode = document.getElementById('courseCode').value.trim();
-    const instructor = document.getElementById('instructor').value.trim();
-    const seats = document.getElementById('seats').value.trim();
-    const schedule = document.getElementById('schedule').value.trim();
-    const room = document.getElementById('room').value.trim();
-    const creditHours = document.getElementById('creditHours').value.trim();
-    
-    // Validate Course Name
-    if (courseName === '') {
-        showFieldError('courseName', 'Course name is required');
-        isValid = false;
-    } else if (courseName.length < 3) {
-        showFieldError('courseName', 'Course name must be at least 3 characters');
-        isValid = false;
-    } else if (courseName.length > 100) {
-        showFieldError('courseName', 'Course name cannot exceed 100 characters');
-        isValid = false;
-    }
-    
-    const courseCodeNorm = courseCode.toUpperCase();
-    // Validate Course Code (format: letters + numbers, e.g., CS101)
-    if (courseCode === '') {
-        showFieldError('courseCode', 'Course code is required');
-        isValid = false;
-    } else if (!/^[A-Z]{2,4}\d{3,4}$/.test(courseCodeNorm)) {
-        showFieldError('courseCode', 'Invalid format (e.g., CS101). Use 2-4 letters followed by 3-4 digits');
-        isValid = false;
-    } else if (isCourseDuplicate(courseCodeNorm)) {
-        showFieldError('courseCode', 'This course code already exists');
-        isValid = false;
-    }
-    
-    // Validate Instructor Name
-    if (instructor === '') {
-        showFieldError('instructor', 'Instructor name is required');
-        isValid = false;
-    } else if (instructor.length < 3) {
-        showFieldError('instructor', 'Instructor name must be at least 3 characters');
-        isValid = false;
-    }
-    
-    // Validate Seats
-    if (seats === '') {
-        showFieldError('seats', 'Available seats is required');
-        isValid = false;
-    } else if (isNaN(seats) || seats < 1 || seats > 500) {
-        showFieldError('seats', 'Seats must be a number between 1 and 500');
-        isValid = false;
-    }
-    
-    // Validate Schedule
-    if (schedule === '') {
-        showFieldError('schedule', 'Schedule is required');
-        isValid = false;
-    } else if (schedule.length < 5) {
-        showFieldError('schedule', 'Please enter a valid schedule');
-        isValid = false;
-    }
-    
-    // Validate Room
-    if (room === '') {
-        showFieldError('room', 'Room number is required');
-        isValid = false;
-    } else if (room.length < 2) {
-        showFieldError('room', 'Please enter a room or location (at least 2 characters)');
-        isValid = false;
-    }
+  clearFormErrors();
+  let isValid = true;
 
-    // Validate Credit Hours
-    if (creditHours === '') {
-        showFieldError('creditHours', 'Credit hours is required');
-        isValid = false;
-    } else if (isNaN(creditHours) || creditHours < 1 || creditHours > 4) {
-        showFieldError('creditHours', 'Credit hours must be a number between 1 and 4');
-        isValid = false;
-    }
-    
-    return isValid;
+  const courseName = document.getElementById('courseName').value.trim();
+  const courseCode = document.getElementById('courseCode').value.trim();
+  const instructor = document.getElementById('instructor').value.trim();
+  const seats = document.getElementById('seats').value.trim();
+  const schedule = document.getElementById('schedule').value.trim();
+  const room = document.getElementById('room').value.trim();
+  const creditHours = document.getElementById('creditHours').value.trim();
+  const fee = document.getElementById('fee').value.trim();
+  const faculty = document.getElementById('faculty').value.trim();
+
+  if (courseName === '') {
+    showFieldError('courseName', 'Course name is required');
+    isValid = false;
+  } else if (courseName.length < 3) {
+    showFieldError('courseName', 'Course name must be at least 3 characters');
+    isValid = false;
+  } else if (courseName.length > 100) {
+    showFieldError('courseName', 'Course name cannot exceed 100 characters');
+    isValid = false;
+  }
+
+  const courseCodeNorm = courseCode.toUpperCase();
+  if (courseCode === '') {
+    showFieldError('courseCode', 'Course code is required');
+    isValid = false;
+  } else if (!/^[A-Z]{2,4}\d{3,4}$/.test(courseCodeNorm)) {
+    showFieldError('courseCode', 'Invalid format (e.g., CS101). Use 2-4 letters followed by 3-4 digits');
+    isValid = false;
+  } else if (isCourseDuplicate(courseCodeNorm)) {
+    showFieldError('courseCode', 'This course code already exists');
+    isValid = false;
+  }
+
+  if (faculty === '' || !FACULTY_LABELS[faculty]) {
+    showFieldError('faculty', 'Please select a faculty');
+    isValid = false;
+  }
+
+  if (instructor === '') {
+    showFieldError('instructor', 'Instructor name is required');
+    isValid = false;
+  } else if (instructor.length < 3) {
+    showFieldError('instructor', 'Instructor name must be at least 3 characters');
+    isValid = false;
+  }
+
+  if (seats === '') {
+    showFieldError('seats', 'Available seats is required');
+    isValid = false;
+  } else if (isNaN(seats) || seats < 1 || seats > 500) {
+    showFieldError('seats', 'Seats must be a number between 1 and 500');
+    isValid = false;
+  }
+
+  if (schedule === '') {
+    showFieldError('schedule', 'Schedule is required');
+    isValid = false;
+  } else if (schedule.length < 5) {
+    showFieldError('schedule', 'Please enter a valid schedule');
+    isValid = false;
+  }
+
+  if (room === '') {
+    showFieldError('room', 'Room number is required');
+    isValid = false;
+  } else if (room.length < 2) {
+    showFieldError('room', 'Please enter a room or location (at least 2 characters)');
+    isValid = false;
+  }
+
+  if (creditHours === '') {
+    showFieldError('creditHours', 'Credit hours is required');
+    isValid = false;
+  } else if (isNaN(creditHours) || creditHours < 1 || creditHours > 4) {
+    showFieldError('creditHours', 'Credit hours must be a number between 1 and 4');
+    isValid = false;
+  }
+
+  if (fee === '') {
+    showFieldError('fee', 'Course fee is required');
+    isValid = false;
+  } else if (isNaN(fee) || parseFloat(fee) < 0) {
+    showFieldError('fee', 'Course fee must be zero or greater');
+    isValid = false;
+  }
+
+  return isValid;
 }
 
-/**
- * Check if course code already exists (to prevent duplicates)
- * Excludes the current course being edited
- */
 function isCourseDuplicate(courseCode) {
-    const norm = courseCode.toUpperCase();
-    return courses.some(course =>
-        String(course.courseCode || '').toUpperCase() === norm &&
-        course.id !== currentEditingCourseId
-    );
+  const norm = courseCode.toUpperCase();
+  return courses.some(
+    (course) => String(course.courseCode || '').toUpperCase() === norm && course.id !== currentEditingCourseId
+  );
 }
 
-/**
- * Display error message for a specific form field
- */
 function showFieldError(fieldId, message) {
-    const field = document.getElementById(fieldId);
-    const errorElement = document.getElementById(fieldId + 'Error');
-    
-    field.parentElement.classList.add('error');
-    errorElement.textContent = message;
+  const field = document.getElementById(fieldId);
+  const errorElement = document.getElementById(fieldId + 'Error');
+  field.parentElement.classList.add('error');
+  errorElement.textContent = message;
 }
 
-/**
- * Clear all form validation errors
- */
 function clearFormErrors() {
-    document.querySelectorAll('.form-group').forEach(group => {
-        group.classList.remove('error');
-    });
-    document.querySelectorAll('.error-message').forEach(msg => {
-        msg.textContent = '';
-    });
+  document.querySelectorAll('.form-group').forEach((group) => group.classList.remove('error'));
+  document.querySelectorAll('.error-message').forEach((msg) => {
+    msg.textContent = '';
+  });
 }
 
-// ========== FORM SUBMISSION & CRUD OPERATIONS ==========
-/**
- * Handle form submission (Add or Update course)
- */
-function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    // Validate form before processing
-    if (!validateForm()) {
-        showErrorMessage('Please fix the errors above');
-        return;
-    }
-    
-    // Get form values
-    const courseData = {
-        courseName: document.getElementById('courseName').value.trim(),
-        courseCode: document.getElementById('courseCode').value.trim().toUpperCase(),
-        instructor: document.getElementById('instructor').value.trim(),
-        seats: parseInt(document.getElementById('seats').value),
-        creditHours: parseInt(document.getElementById('creditHours').value),
-        schedule: document.getElementById('schedule').value.trim(),
-        room: document.getElementById('room').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        enrolledStudents: 0
-    };
-    
-    // Check if we're updating an existing course or adding a new one
-    if (currentEditingCourseId) {
-        // UPDATE existing course
-        updateCourse(currentEditingCourseId, courseData);
-    } else {
-        // ADD new course
-        addCourse(courseData);
-    }
+async function handleFormSubmit(e) {
+  e.preventDefault();
+
+  if (!validateForm()) {
+    showErrorMessage('Please fix the errors above');
+    return;
+  }
+
+  const courseData = {
+    courseName: document.getElementById('courseName').value.trim(),
+    courseCode: document.getElementById('courseCode').value.trim().toUpperCase(),
+    instructor: document.getElementById('instructor').value.trim(),
+    seats: parseInt(document.getElementById('seats').value, 10),
+    capacity: parseInt(document.getElementById('seats').value, 10),
+    creditHours: parseInt(document.getElementById('creditHours').value, 10),
+    schedule: document.getElementById('schedule').value.trim(),
+    room: document.getElementById('room').value.trim(),
+    description: document.getElementById('description').value.trim(),
+    fee: parseFloat(document.getElementById('fee').value),
+    faculty: document.getElementById('faculty').value.trim(),
+  };
+
+  if (currentEditingCourseId) {
+    await updateCourse(currentEditingCourseId, courseData);
+  } else {
+    await addCourse(courseData);
+  }
 }
 
-/**
- * Add a new course
- */
-function addCourse(courseData) {
-    // Generate unique ID (timestamp + random)
-    const newId = 'course_' + Date.now();
-    
-    // Create course object
-    const newCourse = {
-        id: newId,
-        ...courseData,
-        createdAt: new Date().toLocaleDateString()
-    };
-    
-    // Add to array
-    courses.push(newCourse);
-    
-    // Save to storage
-    saveCoursesToStorage();
-    
-    // Reset form
+async function addCourse(courseData) {
+  try {
+    const data = await EduRegAPI.apiRequest('/api/admin/courses', {
+      method: 'POST',
+      body: courseData,
+    });
+
+    await loadCoursesFromAPI();
     resetForm();
-    
-    // Update display
     renderCoursesTable();
     updateStats();
-    
-    // Show success message
     showSuccessMessage(`✓ Course "${courseData.courseName}" added successfully!`);
-    
-    console.log('✓ Course added:', newCourse);
+  } catch (error) {
+    if (error.status === 401) {
+      window.location.href = 'login.html?expired=1';
+      return;
+    }
+    showErrorMessage(error.message || 'Failed to add course.');
+  }
 }
 
-/**
- * Update an existing course
- */
-function updateCourse(courseId, courseData) {
-    // Find course index
-    const courseIndex = courses.findIndex(c => c.id === courseId);
-    
-    if (courseIndex === -1) {
-        showErrorMessage('Course not found!');
-        return;
-    }
-    
-    // Preserve enrolled students count
-    courseData.enrolledStudents = courses[courseIndex].enrolledStudents;
-    
-    // Update course
-    courses[courseIndex] = {
-        ...courses[courseIndex],
-        ...courseData
-    };
-    
-    // Save to storage
-    saveCoursesToStorage();
-    
-    // Reset form and editing state
-    resetForm();
+async function updateCourse(courseId, courseData) {
+  try {
+    const result = await EduRegAPI.apiRequest(`/api/admin/courses/${courseId}`, {
+      method: 'PUT',
+      body: courseData,
+    });
+
+    await loadCoursesFromAPI();
     cancelEdit();
-    
-    // Update display
     renderCoursesTable();
     updateStats();
-    
-    // Show success message
-    showSuccessMessage(`✓ Course "${courseData.courseName}" updated successfully!`);
-    
-    console.log('✓ Course updated:', courses[courseIndex]);
+    const savedFee = result.data?.course?.fee;
+    const feeNote =
+      savedFee != null ? ` Fee saved: $${Number(savedFee).toFixed(2)}.` : '';
+    showSuccessMessage(`✓ Course "${courseData.courseName}" updated successfully!${feeNote}`);
+  } catch (error) {
+    if (error.status === 401) {
+      window.location.href = 'login.html?expired=1';
+      return;
+    }
+    showErrorMessage(error.message || 'Failed to update course.');
+  }
 }
 
-/**
- * Delete a course
- */
-function deleteCourse(courseId) {
-    // Find and remove course
-    courses = courses.filter(c => c.id !== courseId);
-    
-    // Save to storage
-    saveCoursesToStorage();
-    
-    // Update display
+async function deleteCourse(courseId) {
+  try {
+    await EduRegAPI.apiRequest(`/api/admin/courses/${courseId}`, {
+      method: 'DELETE',
+    });
+
+    await loadCoursesFromAPI();
     renderCoursesTable();
     updateStats();
-    
-    // Show success message
     showSuccessMessage('✓ Course deleted successfully!');
-    
-    console.log('✓ Course deleted:', courseId);
+  } catch (error) {
+    showErrorMessage(error.message || 'Failed to delete course.');
+  }
 }
 
-// ========== EDIT & DELETE OPERATIONS ==========
-/**
- * Load course data into form for editing
- */
 function editCourse(courseId) {
-    // Find course
-    const course = courses.find(c => c.id === courseId);
-    
-    if (!course) {
-        showErrorMessage('Course not found!');
-        return;
-    }
-    
-    // Set editing flag
-    currentEditingCourseId = courseId;
-    
-    // Populate form with course data
-    document.getElementById('courseName').value = course.courseName;
-    document.getElementById('courseCode').value = course.courseCode;
-    document.getElementById('instructor').value = course.instructor;
-    document.getElementById('seats').value = course.seats;
-    document.getElementById('creditHours').value = course.creditHours || 3;
-    document.getElementById('schedule').value = course.schedule;
-    document.getElementById('room').value = course.room;
-    document.getElementById('description').value = course.description || '';
-    
-    // Update button labels and visibility
-    document.getElementById('submitBtn').textContent = 'Update Course';
-    document.getElementById('submitBtn').classList.add('btn-update');
-    document.getElementById('resetBtn').style.display = 'none';
-    document.getElementById('cancelBtn').style.display = 'inline-block';
-    
-    // Scroll to form
-    document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-    
-    // Focus first field
-    document.getElementById('courseName').focus();
-    
-    console.log('✓ Editing course:', course);
+  const course = courses.find((c) => c.id === courseId);
+  if (!course) {
+    showErrorMessage('Course not found!');
+    return;
+  }
+
+  currentEditingCourseId = courseId;
+  document.getElementById('courseName').value = course.courseName;
+  document.getElementById('courseCode').value = course.courseCode;
+  document.getElementById('faculty').value = course.faculty || '';
+  document.getElementById('instructor').value = course.instructor;
+  document.getElementById('seats').value = course.seats;
+  document.getElementById('creditHours').value = course.creditHours || 3;
+  document.getElementById('fee').value = course.fee != null ? course.fee : 0;
+  document.getElementById('schedule').value = course.schedule;
+  document.getElementById('room').value = course.room;
+  document.getElementById('description').value = course.description || '';
+
+  document.getElementById('submitBtn').textContent = 'Update Course';
+  document.getElementById('submitBtn').classList.add('btn-update');
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
+  document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('courseName').focus();
 }
 
-/**
- * Cancel editing and reset form
- */
 function cancelEdit() {
-    currentEditingCourseId = null;
-    
-    // Reset form
-    resetForm();
-    
-    // Update button labels and visibility
-    document.getElementById('submitBtn').textContent = 'Add Course';
-    document.getElementById('submitBtn').classList.remove('btn-update');
-    document.getElementById('resetBtn').style.display = 'inline-block';
-    document.getElementById('cancelBtn').style.display = 'none';
-    
-    console.log('✓ Edit cancelled');
+  currentEditingCourseId = null;
+  resetForm();
+  document.getElementById('submitBtn').textContent = 'Add Course';
+  document.getElementById('submitBtn').classList.remove('btn-update');
+  document.getElementById('resetBtn').style.display = 'inline-block';
+  document.getElementById('cancelBtn').style.display = 'none';
 }
 
-/**
- * Show delete confirmation modal
- */
 function showDeleteModal(courseId) {
-    // Find course
-    const course = courses.find(c => c.id === courseId);
-    
-    if (!course) {
-        showErrorMessage('Course not found!');
-        return;
-    }
-    
-    // Set course to delete
-    courseToDelete = courseId;
-    
-    // Show modal
-    document.getElementById('deleteModal').style.display = 'flex';
-    
-    // Focus buttons
-    document.getElementById('confirmDeleteBtn').focus();
+  const course = courses.find((c) => c.id === courseId);
+  if (!course) {
+    showErrorMessage('Course not found!');
+    return;
+  }
+  courseToDelete = courseId;
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('confirmDeleteBtn').focus();
 }
 
-/**
- * Close delete confirmation modal
- */
 function closeDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
-    courseToDelete = null;
+  document.getElementById('deleteModal').style.display = 'none';
+  courseToDelete = null;
 }
 
-/**
- * Confirm deletion
- */
 function confirmDelete() {
-    if (courseToDelete) {
-        deleteCourse(courseToDelete);
-        closeDeleteModal();
-    }
+  if (courseToDelete) {
+    deleteCourse(courseToDelete);
+    closeDeleteModal();
+  }
 }
 
-// ========== FORM RESET ==========
-/**
- * Reset form to initial state
- */
 function resetForm() {
-    document.getElementById('courseForm').reset();
-    clearFormErrors();
-    clearMessages();
-    currentEditingCourseId = null;
+  document.getElementById('courseForm').reset();
+  clearFormErrors();
+  clearMessages();
+  currentEditingCourseId = null;
 }
 
-// ========== TABLE RENDERING ==========
-/**
- * Render courses table with all courses
- */
 function renderCoursesTable() {
-    const tableBody = document.getElementById('tableBody');
-    const emptyState = document.getElementById('emptyState');
-    
-    // Check if there are courses
-    if (courses.length === 0) {
-        tableBody.innerHTML = '';
-        emptyState.textContent = 'No courses found. Add a new course to get started.';
-        emptyState.style.display = 'block';
-        return;
-    }
-    
-    // Hide empty state
-    emptyState.style.display = 'none';
-    
-    // Clear table body
+  const tableBody = document.getElementById('tableBody');
+  const emptyState = document.getElementById('emptyState');
+
+  if (courses.length === 0) {
     tableBody.innerHTML = '';
-    
-    // Add each course as a table row
-    courses.forEach((course, index) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
+    emptyState.textContent = 'No courses found. Add a new course to get started.';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  tableBody.innerHTML = '';
+
+  courses.forEach((course, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
             <td>${index + 1}</td>
             <td>
                 <strong>${escapeHtml(course.courseName)}</strong>
                 ${course.description ? `<br><small style="color: #999;">${escapeHtml(course.description)}</small>` : ''}
             </td>
             <td><strong>${escapeHtml(course.courseCode)}</strong></td>
+            <td>${escapeHtml(course.facultyLabel || getFacultyLabel(course.faculty))}</td>
             <td>${escapeHtml(course.instructor)}</td>
             <td>
                 <span class="inline-block rounded-md bg-surface-container-high px-sm py-xs font-label-sm text-on-surface-variant">${escapeHtml(String(course.seats))}</span>
             </td>
             <td><strong>${course.creditHours || 3}</strong></td>
+            <td><strong>$${Number(course.fee != null ? course.fee : 0).toFixed(2)}</strong></td>
             <td>${escapeHtml(course.schedule)}</td>
             <td>${escapeHtml(course.room)}</td>
             <td>
@@ -492,73 +373,58 @@ function renderCoursesTable() {
                 </div>
             </td>
         `;
-        
-        tableBody.appendChild(row);
-    });
-    
-    console.log(`✓ Table rendered with ${courses.length} courses`);
+    tableBody.appendChild(row);
+  });
 }
 
-// ========== SEARCH & FILTER ==========
-/**
- * Handle search functionality
- */
 function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase().trim();
-    
-    // If search is empty, show all courses
-    if (searchTerm === '') {
-        renderCoursesTable();
-        return;
-    }
-    
-    // Filter courses based on search term
-    const filteredCourses = courses.filter(course => {
-        return course.courseName.toLowerCase().includes(searchTerm) ||
-               course.courseCode.toLowerCase().includes(searchTerm) ||
-               course.instructor.toLowerCase().includes(searchTerm);
-    });
-    
-    // Display filtered results
-    displayFilteredCourses(filteredCourses);
+  const searchTerm = e.target.value.toLowerCase().trim();
+  if (searchTerm === '') {
+    renderCoursesTable();
+    return;
+  }
+
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.courseName.toLowerCase().includes(searchTerm) ||
+      course.courseCode.toLowerCase().includes(searchTerm) ||
+      course.instructor.toLowerCase().includes(searchTerm) ||
+      getFacultyLabel(course.faculty).toLowerCase().includes(searchTerm)
+  );
+
+  displayFilteredCourses(filteredCourses);
 }
 
-/**
- * Display filtered courses
- */
 function displayFilteredCourses(filteredCourses) {
-    const tableBody = document.getElementById('tableBody');
-    const emptyState = document.getElementById('emptyState');
-    
-    // Check if there are filtered courses
-    if (filteredCourses.length === 0) {
-        tableBody.innerHTML = '';
-        emptyState.textContent = 'No courses match your search.';
-        emptyState.style.display = 'block';
-        return;
-    }
-    
-    // Hide empty state
-    emptyState.style.display = 'none';
-    
-    // Clear table body
+  const tableBody = document.getElementById('tableBody');
+  const emptyState = document.getElementById('emptyState');
+
+  if (filteredCourses.length === 0) {
     tableBody.innerHTML = '';
-    
-    // Add filtered courses
-    filteredCourses.forEach((course, index) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
+    emptyState.textContent = 'No courses match your search.';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  tableBody.innerHTML = '';
+
+  filteredCourses.forEach((course, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
             <td>${index + 1}</td>
             <td>
                 <strong>${escapeHtml(course.courseName)}</strong>
                 ${course.description ? `<br><small style="color: #999;">${escapeHtml(course.description)}</small>` : ''}
             </td>
             <td><strong>${escapeHtml(course.courseCode)}</strong></td>
+            <td>${escapeHtml(course.facultyLabel || getFacultyLabel(course.faculty))}</td>
             <td>${escapeHtml(course.instructor)}</td>
             <td>
                 <span class="inline-block rounded-md bg-surface-container-high px-sm py-xs font-label-sm text-on-surface-variant">${escapeHtml(String(course.seats))}</span>
             </td>
+            <td><strong>${course.creditHours || 3}</strong></td>
+            <td><strong>$${Number(course.fee != null ? course.fee : 0).toFixed(2)}</strong></td>
             <td>${escapeHtml(course.schedule)}</td>
             <td>${escapeHtml(course.room)}</td>
             <td>
@@ -568,120 +434,130 @@ function displayFilteredCourses(filteredCourses) {
                 </div>
             </td>
         `;
-        
-        tableBody.appendChild(row);
-    });
+    tableBody.appendChild(row);
+  });
 }
 
-// ========== STATISTICS ==========
-/**
- * Update statistics displayed at bottom of table
- */
 function updateStats() {
-    // Calculate total courses
-    const totalCourses = courses.length;
-    
-    // Calculate total available seats
-    const totalSeats = courses.reduce((sum, course) => {
-        return sum + course.seats;
-    }, 0);
-    
-    // Update display
-    document.getElementById('totalCourses').textContent = totalCourses;
-    document.getElementById('totalSeats').textContent = totalSeats;
+  document.getElementById('totalCourses').textContent = courses.length;
+  document.getElementById('totalSeats').textContent = courses.reduce((sum, course) => sum + course.seats, 0);
 }
 
-// ========== LOCAL STORAGE (Data Persistence) ==========
-/**
- * Save courses to browser's local storage
- */
-function saveCoursesToStorage() {
-    try {
-        localStorage.setItem('smartUniversity_courses', JSON.stringify(courses));
-        console.log('✓ Courses saved to storage');
-    } catch (error) {
-        console.error('Error saving to storage:', error);
-        showErrorMessage('Error saving data. Please try again.');
+async function loadCoursesFromAPI() {
+  try {
+    const data = await EduRegAPI.apiRequest('/api/admin/courses?limit=100');
+    courses = data.data.courses || [];
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      window.location.href = 'login.html?expired=1';
+      return;
     }
+    courses = [];
+    showErrorMessage(error.message || 'Failed to load courses.');
+  }
 }
 
-/**
- * Load courses from browser's local storage
- */
-function loadCoursesFromStorage() {
-    try {
-        const storedData = localStorage.getItem('smartUniversity_courses');
-        
-        if (storedData) {
-            courses = JSON.parse(storedData);
-            console.log('✓ Courses loaded from storage:', courses.length);
-        } else {
-            // Start with no courses so admin can add them manually
-            courses = [];
-            console.log('✓ No saved courses found. Add courses from the admin panel.');
-        }
-    } catch (error) {
-        console.error('Error loading from storage:', error);
-        courses = [];
-    }
+let enrollments = [];
+
+async function loadEnrollmentsFromAPI() {
+  try {
+    const data = await EduRegAPI.apiRequest('/api/admin/enrollments?limit=100');
+    enrollments = data.data.enrollments || [];
+  } catch {
+    enrollments = [];
+  }
 }
 
-// ========== MESSAGE UTILITIES ==========
-/**
- * Show success message
- */
+function renderEnrollmentsTable() {
+  const tbody = document.getElementById('enrollmentsBody');
+  if (!tbody) return;
+
+  if (enrollments.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="5" class="px-md py-md font-body-sm text-on-surface-variant">No enrollment data yet. Students appear here after they register for courses.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = enrollments
+    .map((e) => {
+      const student = e.student || {};
+      const course = e.course || {};
+      const date = e.enrollmentDate ? formatDate(e.enrollmentDate) : '—';
+      const enrollmentId = e.id || (e._id != null ? String(e._id) : '');
+      return `<tr data-enrollment-id="${escapeHtml(enrollmentId)}">
+        <td class="px-md py-sm font-body-sm">${escapeHtml(course.code || '—')} — ${escapeHtml(course.name || '—')}</td>
+        <td class="px-md py-sm font-body-sm">${escapeHtml(student.name || '—')}</td>
+        <td class="px-md py-sm font-body-sm">${escapeHtml(student.email || '—')}</td>
+        <td class="px-md py-sm font-body-sm"><span class="rounded-full bg-primary-container px-sm py-xs font-label-sm text-on-primary-container">${escapeHtml(e.status || 'enrolled')}</span> <span class="text-on-surface-variant">${date}</span></td>
+        <td class="px-md py-sm font-body-sm">
+          <button type="button" class="drop-enrollment-btn rounded-lg border border-error/40 bg-error-container px-sm py-xs font-label-sm text-on-error-container hover:opacity-90" data-enrollment-id="${escapeHtml(enrollmentId)}">Drop</button>
+        </td>
+      </tr>`;
+    })
+    .join('');
+}
+
+async function adminDropEnrollment(enrollmentId, btn) {
+  if (!enrollmentId) {
+    showErrorMessage('Invalid enrollment. Refresh the page and try again.');
+    return;
+  }
+
+  const row = enrollments.find((e) => (e.id || String(e._id || '')) === enrollmentId);
+  const studentName = row?.student?.name || 'this student';
+  const courseName = row?.course?.name || 'this course';
+
+  if (!window.confirm(`Drop ${studentName} from ${courseName}?`)) return;
+
+  if (btn) btn.disabled = true;
+
+  try {
+    const data = await EduRegAPI.apiRequest(`/api/admin/enrollments/${encodeURIComponent(enrollmentId)}`, {
+      method: 'DELETE',
+    });
+    await loadEnrollmentsFromAPI();
+    renderEnrollmentsTable();
+    showSuccessMessage(data.message || 'Student dropped from course.');
+  } catch (error) {
+    const msg =
+      error.message ||
+      (error.status === 404
+        ? 'Drop failed — restart the server (npm start) so admin routes load.'
+        : 'Failed to drop enrollment.');
+    showErrorMessage(msg);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 function showSuccessMessage(message) {
-    const element = document.getElementById('successMessage');
-    element.textContent = message;
-    element.style.display = 'block';
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        element.style.display = 'none';
-    }, 5000);
+  const element = document.getElementById('successMessage');
+  if (!element) return;
+  element.textContent = message;
+  element.classList.remove('hidden');
+  setTimeout(() => element.classList.add('hidden'), 5000);
 }
 
-/**
- * Show error message
- */
 function showErrorMessage(message) {
-    const element = document.getElementById('errorMessage');
-    element.textContent = message;
-    element.style.display = 'block';
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        element.style.display = 'none';
-    }, 5000);
+  const element = document.getElementById('errorMessage');
+  if (!element) return;
+  element.textContent = message;
+  element.classList.remove('hidden');
+  setTimeout(() => element.classList.add('hidden'), 5000);
 }
 
-/**
- * Clear all messages
- */
 function clearMessages() {
-    document.getElementById('successMessage').style.display = 'none';
-    document.getElementById('errorMessage').style.display = 'none';
+  const success = document.getElementById('successMessage');
+  const error = document.getElementById('errorMessage');
+  if (success) success.classList.add('hidden');
+  if (error) error.classList.add('hidden');
 }
 
-// ========== UTILITY FUNCTIONS ==========
-/**
- * Escape HTML special characters to prevent XSS attacks
- */
 function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, m => map[m]);
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, (m) => map[m]);
 }
 
-// ========== KEYBOARD SHORTCUTS ==========
-document.addEventListener('keydown', function(e) {
-    // Escape key closes modal
-    if (e.key === 'Escape') {
-        closeDeleteModal();
-    }
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeDeleteModal();
 });

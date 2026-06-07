@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Management — EduReg Admin</title>
+    <title>Course Management — MIU Portal Admin</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="../js/edureg-tailwind-config.js"></script>
     <link rel="stylesheet" href="../css/edureg-global.css">
@@ -17,7 +17,7 @@
                 <span class="material-symbols-outlined icon-filled text-on-primary">school</span>
             </div>
             <div>
-                <h1 class="font-headline-sm font-bold text-primary">Smart University</h1>
+                <h1 class="font-headline-sm font-bold text-primary">MIU Portal</h1>
                 <p class="font-label-md text-on-surface-variant">Academic Portal</p>
             </div>
         </div>
@@ -27,28 +27,20 @@
         </a>
         <div class="flex flex-1 flex-col gap-1 overflow-y-auto">
             <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high" href="admin-dashboard.html">
-                <span class="material-symbols-outlined text-secondary group-hover:text-on-surface">dashboard</span>
-                <span class="font-label-md">Overview</span>
-            </a>
-            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high" href="student-dashboard.html">
-                <span class="material-symbols-outlined text-secondary">school</span>
-                <span class="font-label-md">Student view</span>
+                <span class="material-symbols-outlined text-secondary">dashboard</span>
+                <span class="font-label-md">Admin dashboard</span>
             </a>
             <a class="flex scale-[0.98] items-center gap-3 rounded-lg bg-primary-container px-3 py-2 font-bold text-on-primary-container transition-transform" href="admin-panel.html">
-                <span class="material-symbols-outlined icon-filled">admin_panel_settings</span>
+                <span class="material-symbols-outlined icon-filled">menu_book</span>
                 <span class="font-label-md">Course management</span>
             </a>
             <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant hover:bg-surface-container-high" href="admin-students.html">
                 <span class="material-symbols-outlined text-secondary">groups</span>
                 <span class="font-label-md">Student roster</span>
             </a>
-            <a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant hover:bg-surface-container-high" href="admin-settings.html">
-                <span class="material-symbols-outlined text-secondary">tune</span>
-                <span class="font-label-md">Settings</span>
-            </a>
         </div>
         <div class="mt-auto flex flex-col gap-1 border-t border-outline-variant pt-4">
-            <a href="#" class="logout-btn flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high">
+            <a href="#" data-logout class="logout-btn flex items-center gap-3 rounded-lg px-3 py-2 text-on-surface-variant transition-all hover:bg-surface-container-high">
                 <span class="material-symbols-outlined text-secondary">logout</span>
                 <span class="font-label-md">Log Out</span>
             </a>
@@ -66,7 +58,7 @@
                     <h2 class="font-headline-lg tracking-tight text-on-surface">Courses</h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="admin-dashboard.html" class="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md shadow-sm transition-colors hover:bg-surface-container-low">← Dashboard</a>
+                    <a href="admin-students.html" class="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md shadow-sm transition-colors hover:bg-surface-container-low">Student roster</a>
                 </div>
             </header>
             <div class="mb-md flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
@@ -92,6 +84,18 @@
                         <input type="text" id="courseCode" name="courseCode" required placeholder="e.g. CS101" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm uppercase outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                         <span class="error-message mt-1 block text-sm text-error" id="courseCodeError"></span>
                     </div>
+                    <div class="form-group">
+                        <label class="mb-1 block font-label-md text-on-surface" for="faculty">Faculty *</label>
+                        <select id="faculty" name="faculty" required class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <option value="" disabled selected>Select faculty…</option>
+                            <option value="cs">Computer Science</option>
+                            <option value="eng">Engineering</option>
+                            <option value="bus">Business Administration</option>
+                            <option value="arts">Liberal Arts</option>
+                            <option value="sci">Natural Sciences</option>
+                        </select>
+                        <span class="error-message mt-1 block text-sm text-error" id="facultyError"></span>
+                    </div>
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="form-group">
                             <label class="mb-1 block font-label-md text-on-surface" for="instructor">Instructor *</label>
@@ -109,6 +113,11 @@
                             <label class="mb-1 block font-label-md text-on-surface" for="creditHours">Credit hours *</label>
                             <input type="number" id="creditHours" name="creditHours" min="1" max="4" required placeholder="1–4" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             <span class="error-message mt-1 block text-sm text-error" id="creditHoursError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="mb-1 block font-label-md text-on-surface" for="fee">Course fee (USD) *</label>
+                            <input type="number" id="fee" name="fee" min="0" step="0.01" required placeholder="0.00" class="w-full rounded-lg border border-outline-variant bg-surface px-md py-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <span class="error-message mt-1 block text-sm text-error" id="feeError"></span>
                         </div>
                         <div class="form-group">
                             <label class="mb-1 block font-label-md text-on-surface" for="schedule">Schedule *</label>
@@ -145,9 +154,11 @@
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">ID</th>
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Course</th>
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Code</th>
+                                <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Faculty</th>
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Instructor</th>
                                 <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Seats left</th>
                                 <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Credits</th>
+                                <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Fee</th>
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Schedule</th>
                                 <th class="px-4 py-3 font-label-sm font-medium text-on-surface-variant">Room</th>
                                 <th class="px-4 py-3 text-right font-label-sm font-medium text-on-surface-variant">Actions</th>
@@ -178,11 +189,12 @@
                                 <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Student</th>
                                 <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Email</th>
                                 <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Status</th>
+                                <th class="px-md py-sm text-left font-label-sm text-on-surface-variant">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="enrollmentsBody">
                             <tr>
-                                <td colspan="4" class="px-md py-md font-body-sm text-on-surface-variant">No enrollment data yet. Students appear here after they register for courses.</td>
+                                <td colspan="5" class="px-md py-md font-body-sm text-on-surface-variant">No enrollment data yet. Students appear here after they register for courses.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -201,6 +213,9 @@
             </div>
         </div>
     </div>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/api.js"></script>
     <script src="../js/admin-panel.js"></script>
+    <script src="../js/edureg-layout.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* EduReg design tokens for Tailwind CDN — load after https://cdn.tailwindcss.com */
+/* MIU Portal design tokens for Tailwind CDN — load after https://cdn.tailwindcss.com */
 tailwind.config = {
   darkMode: 'class',
   theme: {

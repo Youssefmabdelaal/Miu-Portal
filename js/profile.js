@@ -1,128 +1,125 @@
-const STORAGE_USERS_KEY = 'smartUniversityUsers';
-const STORAGE_CURRENT_USER_KEY = 'smartUniversityCurrentUser';
+const DEFAULT_AVATAR = '/images/default-avatar.svg';
 
 window.addEventListener('DOMContentLoaded', () => {
-    initializeProfilePage();
+  initializeProfilePage();
 });
 
-function initializeProfilePage() {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-        window.location.href = 'login.html';
-        return;
-    }
+async function initializeProfilePage() {
+  const currentUser = await EduRegAPI.requireAuth({ role: 'student' });
+  if (!currentUser) return;
 
-    populateProfileForm(currentUser);
+  await loadProfile(currentUser);
 
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-        profileForm.addEventListener('submit', event => handleProfileSubmit(event, currentUser));
-    }
-
-    // Setup show password functionality
-    setupShowPassword();
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    profileForm.addEventListener('submit', (event) => handleProfileSubmit(event));
+  }
 }
 
-function setupShowPassword() {
-    const showPasswordCheckbox = document.getElementById('show-password');
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-
-    if (showPasswordCheckbox && passwordInput && confirmPasswordInput) {
-        showPasswordCheckbox.addEventListener('change', () => {
-            const type = showPasswordCheckbox.checked ? 'text' : 'password';
-            passwordInput.type = type;
-            confirmPasswordInput.type = type;
-        });
-    }
-}
-
-function getCurrentUser() {
-    const storedUser = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
-    if (!storedUser) return null;
-    try {
-        return JSON.parse(storedUser);
-    } catch (error) {
-        return null;
-    }
+async function loadProfile(user) {
+  try {
+    const data = await EduRegAPI.apiRequest('/api/profile');
+    populateProfileForm(data.data.user);
+    const img = document.getElementById('profile-preview');
+    if (img) img.src = data.data.user.profileImage || DEFAULT_AVATAR;
+  } catch {
+    populateProfileForm(user);
+    const img = document.getElementById('profile-preview');
+    if (img) img.src = user.profileImage || DEFAULT_AVATAR;
+  }
 }
 
 function populateProfileForm(user) {
-    document.getElementById('name').value = user.name || '';
-    document.getElementById('email').value = user.email || '';
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  if (nameEl) nameEl.value = user.name || '';
+  if (emailEl) emailEl.value = user.email || '';
 }
 
-function handleProfileSubmit(event, currentUser) {
-    event.preventDefault();
+async function handleProfileSubmit(event) {
+  event.preventDefault();
 
-    const name = document.getElementById('name').value.trim();
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const messageElement = document.getElementById('formMessage');
+  const name = document.getElementById('name').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const messageElement = document.getElementById('formMessage');
+  const submitBtn = event.target.querySelector('button[type="submit"]');
 
-    if (!name) {
-        showMessage(messageElement, 'Please enter your full name.', 'error');
-        return;
+  if (!name) {
+    showMessage(messageElement, 'Please enter your full name.', 'error');
+    return;
+  }
+
+  const body = new FormData();
+  body.append('name', name);
+
+  if (password || confirmPassword) {
+    if (password !== confirmPassword) {
+      showMessage(messageElement, 'Passwords do not match.', 'error');
+      return;
     }
-
-    if (password || confirmPassword) {
-        if (password !== confirmPassword) {
-            showMessage(messageElement, 'Passwords do not match.', 'error');
-            return;
-        }
-        if (!validatePassword(password)) {
-            showMessage(messageElement, 'Password must be at least 8 characters long and include uppercase, lowercase, and a number.', 'error');
-            return;
-        }
-        currentUser.password = password;
+    if (!validatePassword(password)) {
+      showMessage(
+        messageElement,
+        'Password must be at least 8 characters long and include uppercase, lowercase, and a number.',
+        'error'
+      );
+      return;
     }
+    body.append('password', password);
+  }
 
-    currentUser.name = name;
+  const fileInput = document.getElementById('profileImage');
+  if (fileInput && fileInput.files[0]) {
+    body.append('profileImage', fileInput.files[0]);
+  }
 
-    const users = getStoredUsers();
-    const userIndex = users.findIndex(user => user.email === currentUser.email);
-    if (userIndex >= 0) {
-        users[userIndex] = { ...users[userIndex], ...currentUser };
-        saveUsers(users);
-        setCurrentUser(currentUser);
-        showMessage(messageElement, 'Profile updated successfully.', 'success');
-    } else {
-        showMessage(messageElement, 'Unable to update profile. Please log in again.', 'error');
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const data = await EduRegAPI.apiRequest('/api/profile', {
+      method: 'PUT',
+      body,
+    });
+
+    const user = EduRegAPI.getCachedUser() || {};
+    user.name = data.data.user.name;
+    user.profileImage = data.data.user.profileImage;
+    EduRegAPI.cacheUser(user);
+
+    const img = document.getElementById('profile-preview');
+    if (img) img.src = data.data.user.profileImage || DEFAULT_AVATAR;
+
+    showMessage(messageElement, 'Profile updated successfully.', 'success');
+    document.getElementById('password').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch (error) {
+    if (error.status === 401) {
+      window.location.href = 'login.html?expired=1';
+      return;
     }
+    showMessage(messageElement, error.message || 'Unable to update profile.', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 }
 
 function validatePassword(password) {
-    const hasLength = password.length >= 8;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    return hasLength && hasUpper && hasLower && hasNumber;
-}
-
-function getStoredUsers() {
-    const stored = localStorage.getItem(STORAGE_USERS_KEY);
-    try {
-        return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-        return [];
-    }
-}
-
-function saveUsers(users) {
-    localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
-}
-
-function setCurrentUser(user) {
-    localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(user));
+  const hasLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  return hasLength && hasUpper && hasLower && hasNumber;
 }
 
 function showMessage(element, text, type) {
-    if (!element) return;
-    element.textContent = text;
-    const base = 'rounded-lg border px-md py-sm font-body-sm text-body-sm ';
-    if (type === 'error') {
-        element.className = base + 'border-error/30 bg-error-container text-on-error-container';
-    } else {
-        element.className = base + 'border-primary-fixed-dim bg-primary-fixed text-on-primary-fixed';
-    }
+  if (!element) return;
+  element.textContent = text;
+  element.classList.remove('hidden');
+  const base = 'rounded-lg border px-md py-sm font-body-sm text-body-sm ';
+  if (type === 'error') {
+    element.className = base + 'border-error/30 bg-error-container text-on-error-container';
+  } else {
+    element.className = base + 'border-primary-fixed-dim bg-primary-fixed text-on-primary-fixed';
+  }
 }
